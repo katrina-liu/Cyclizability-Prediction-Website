@@ -41,6 +41,9 @@ def pred(model, pool):
     A = model.predict(input, batch_size=128).reshape(len(pool), )
     return A
 
+file_name1=''
+file_name=''
+
 st.write("""
 # Cyclizability Prediction
 """)
