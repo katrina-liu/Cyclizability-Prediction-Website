@@ -78,7 +78,7 @@ if len(seq) >= 50:
     plt.gca().spines['right'].set_visible(False)
     # download matplotlib graph
     st.markdown("***")
-    st.write(f"Graph of C{model[5:}free prediction")
+    st.write(f"Graph of C{model[5:]}free prediction")
     img = io.BytesIO()
     fig.savefig(img, format='png')
 
@@ -92,7 +92,7 @@ if len(seq) >= 50:
     
     st.pyplot(fig)
     st.markdown("***")
-    st.write(f"Data of C{model[5:}free prediction")
+    st.write(f"Data of C{model[5:]}free prediction")
     # show data in scrollable window
     long_text = ""
     for i in range(len(cNfree)):
