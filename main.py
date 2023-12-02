@@ -41,22 +41,16 @@ def pred(model, pool):
     A = model.predict(input, batch_size=128).reshape(len(pool), )
     return A
 
-st.write("""
-# Cyclizability Prediction
-""")
+st.write("# Cyclizability Prediction")
 
-st.write("""
-Please provide a sequence (longer than 50 nucleotides)
-""")
+st.write("Please provide a sequence (longer than 50 nucleotides)")
 col1, col2, col3 = st.columns([0.4975, 0.05, 0.4975])
 
 with col1:
     seq = st.text_input('input a sequence', 'GTAGC...') # seq = 'AGTTC...' ask user for it
 
 with col2:
-    st.write("""
-    OR
-    """)
+    st.write("OR")
 
 with col3:
     uploaded_file = st.file_uploader("upload a sequence")
@@ -67,9 +61,7 @@ with col3:
         seq = stringio.read()
         st.write(seq)
 
-st.write("""
-Please select the parameter you would like to predict:
-""")
+st.write("Please select the parameter you would like to predict:")
 option = st.selectbox('', ('C0free prediction', 'C26free prediction', 'C29free prediction', 'C31free prediction'))
 
 if len(seq) >= 50:
@@ -86,9 +78,7 @@ if len(seq) >= 50:
     plt.gca().spines['right'].set_visible(False)
     # download matplotlib graph
     st.markdown("***")
-    st.write(f"""
-    Graph of C{model[5:}free prediction
-    """)
+    st.write(f"Graph of C{model[5:}free prediction")
     img = io.BytesIO()
     fig.savefig(img, format='png')
 
@@ -102,9 +92,7 @@ if len(seq) >= 50:
     
     st.pyplot(fig)
     st.markdown("***")
-    st.write(f"""
-    Data of C{model[5:}free prediction
-    """)
+    st.write(f"Data of C{model[5:}free prediction")
     # show data in scrollable window
     long_text = ""
     for i in range(len(cNfree)):
