@@ -44,13 +44,13 @@ def pred(model, pool):
 st.title("Cyclizability Prediction")
 
 st.subheader("Please provide a sequence (longer than 50 nucleotides)")
-col1, col2, col3 = st.columns([0.4975, 0.005, 0.4975])
+col1, col2, col3 = st.columns([0.46, 0.08, 0.46])
 
 with col1:
     seq = st.text_input('input a sequence', 'GTAGC...') # seq = 'AGTTC...' ask user for it
 
 with col2:
-    st.subheader("OR")
+    st.markdown("<h1 style='text-align: center; color: black;'>OR</h1>", unsafe_allow_html=True)
 
 with col3:
     uploaded_file = st.file_uploader("upload a sequence")
