@@ -41,9 +41,6 @@ def pred(model, pool):
     A = model.predict(input, batch_size=128).reshape(len(pool), )
     return A
 
-file_name1=''
-file_name=''
-
 st.write("""
 # Cyclizability Prediction
 """)
@@ -69,15 +66,14 @@ if len(seq) >= 50:
     
     img = io.BytesIO()
     fig.savefig(img, format='png')
-    
+
+    file_name1 = st.text_input('file name', 'e.g. cyc_trial_6_graph')
     btn = st.download_button(
             label="Download graph",
             data=img,
             file_name=f"{file_name1}.png",
             mime="image/png"
     )
-    
-    file_name1 = st.text_input('file name', 'e.g. cyc_trial_6_graph')
     
     st.pyplot(fig)
     st.markdown("***")
@@ -86,8 +82,8 @@ if len(seq) >= 50:
     for i in range(len(cNfree)):
         long_text += f"{list50[i]} {cNfree[i]}\n"
 
-    st.download_button('Download data', long_text, file_name=f"{file_name}.txt")
-
     file_name = st.text_input('file name', 'e.g. cyc_trial_6')
+    
+    st.download_button('Download data', long_text, file_name=f"{file_name}.txt")
     
     stx.scrollableTextbox(long_text, height = 100)
