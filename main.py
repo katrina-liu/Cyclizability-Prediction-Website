@@ -1,8 +1,5 @@
 import streamlit as st
 
-# cd '/Users/jingli/Dropbox (BCH)/Sophia/Sophia tj new project'
-# streamlit run main.py
-
 from sklearn import metrics
 from sklearn import decomposition
 from sklearn import manifold
@@ -13,6 +10,7 @@ import time
 import random 
 import math 
 from tqdm import tqdm 
+import io
 
 import tensorflow as tf
 from tensorflow import keras
@@ -20,7 +18,6 @@ from keras.datasets import mnist
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.layers import Dropout
-#from keras.utils import np_utils
 
 import scipy.stats
 from scipy.stats import f_oneway, levene, mannwhitneyu, normaltest, ttest_ind
@@ -66,10 +63,18 @@ if len(seq) >= 50:
     plt.gca().spines['right'].set_visible(False)
     # download matplotlib graph
     st.markdown("***")
-    if st.button('download graph'):
-        fig.savefig(f'{file_name}.png')
-
-    file_name = st.text_input('file name', 'e.g. cyc_trial_6_graph')
+    
+    img = io.BytesIO()
+    fig.savefig(img, format='png')
+    
+    btn = st.download_button(
+            label="Download graph",
+            data=img,
+            file_name=f"{file_name1}.png",
+            mime="image/png"
+    )
+    
+    file_name1 = st.text_input('file name', 'e.g. cyc_trial_6_graph')
     
     st.pyplot(fig)
     st.markdown("***")
@@ -78,9 +83,7 @@ if len(seq) >= 50:
     for i in range(len(cNfree)):
         long_text += f"{list50[i]} {cNfree[i]}\n"
 
-    if st.button('download data'):
-        with open(file_name+'.txt', 'w')as a:
-            a.write(long_text)
+    st.download_button('Download data', long_text, file_name=f"{file_name}.txt")
 
     file_name = st.text_input('file name', 'e.g. cyc_trial_6')
     
