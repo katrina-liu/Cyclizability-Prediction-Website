@@ -45,7 +45,24 @@ st.write("""
 # Cyclizability Prediction
 """)
 
-seq = st.text_input('sequence', 'GTAGC...') # seq = 'AGTTC...' ask user for it
+col1, col2, col3 = st.columns([0.4975, 0.05, 0.4975])
+
+with col1:
+    seq = st.text_input('input a sequence', 'GTAGC...') # seq = 'AGTTC...' ask user for it
+
+with col2:
+    st.write("""
+    OR
+    """)
+
+with col3:
+    uploaded_file = st.file_uploader("upload a sequence")
+
+    if uploaded_file is not None:
+        stringio = io.StringIO(uploaded_file.getvalue().decode("utf-8"))
+        
+        seq = stringio.read()
+        st.write(seq)
 
 option = st.selectbox('', ('C0free prediction', 'C26free prediction', 'C29free prediction', 'C31free prediction'))
 
