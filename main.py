@@ -44,7 +44,7 @@ def pred(model, pool):
 st.title("Cyclizability Prediction")
 
 st.subheader("Please provide a sequence (longer than 50 nucleotides)")
-col1, col2, col3 = st.columns([0.4975, 0.05, 0.4975])
+col1, col2, col3 = st.columns([0.49, 0.02, 0.49])
 
 with col1:
     seq = st.text_input('input a sequence', 'GTAGC...') # seq = 'AGTTC...' ask user for it
