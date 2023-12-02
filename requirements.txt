@@ -1,0 +1,13 @@
+sklearn
+matplotlib.pyplot
+numpy
+pandas 
+tqdm
+tensorflow
+keras.datasets
+keras.models
+keras.layers import Dense
+keras.layers import Dropout
+scipy.stats
+sklearn.model_selection
+streamlit_scrollable_textbox
