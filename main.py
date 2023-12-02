@@ -50,7 +50,7 @@ with col1:
     seq = st.text_input('input a sequence', 'GTAGC...') # seq = 'AGTTC...' ask user for it
 
 with col2:
-    st.markdown("<h1 style='text-align: center; color: black;'>OR</h1>", unsafe_allow_html=True)
+    st.subheader("OR")
 
 with col3:
     uploaded_file = st.file_uploader("upload a sequence")
