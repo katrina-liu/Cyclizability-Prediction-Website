@@ -86,4 +86,4 @@ if len(seq) >= 50:
     
     st.download_button('Download data', long_text, file_name=f"{file_name}.txt")
     
-    stx.scrollableTextbox(long_text, height = 200)
+    stx.scrollableTextbox(long_text, height = 300)
