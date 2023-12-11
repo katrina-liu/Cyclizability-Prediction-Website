@@ -286,7 +286,7 @@ option = st.selectbox('', ('C0free prediction', 'C26free prediction', 'C29free p
 if len(seq) >= 50 and option == 'Spatial analysis':
     st.markdown("***")
     st.header(f"Spatial Visualization")
-    st.markdown("please download the pdb file and view with pymol")
+    st.markdown("please download the pdb file and view with pymol to see the vector force predictions")
     pdbid = st.text_input('PDB ID','7OHC').upper()
     factor = st.text_input('vector length scale factor','e.g. 30')
     try:
