@@ -1,9 +1,11 @@
 matplotlib
 numpy
 pandas 
-tqdm
 tensorflow
 keras
 scipy
 scikit-learn
 streamlit_scrollable_textbox
+stmol
+py3Dmol
+ipython_genutils
