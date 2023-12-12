@@ -127,8 +127,9 @@ figg, axx = plt.subplots()
 figgg, axxx = plt.subplots()
 pdb_output = "HEADER    output from spatial analysis\n"
 c26_, c29_, c31_ = None, None, None
+amp, smth1, psi, smth2 = [], [], [], []
 def longcode(sequence, name, factor=30):
-    global figg, axx, figgg, axxx, pdb_output, c26_, c29_, c31_
+    global figg, axx, figgg, axxx, pdb_output, c26_, c29_, c31_, amp, smth1, psi, smth2
     
     L = 200
     pool = []
@@ -203,14 +204,14 @@ def longcode(sequence, name, factor=30):
     plt.figure(figsize=(10, 3))
     plt.gca().spines['top'].set_visible(False)
     plt.gca().spines['right'].set_visible(False)
-    
-    axx.plot(np.arange(0.5, 0.5+len(amp)), amp)
-    
+
+    smth1 = np.arange(0.5, 0.5+len(amp))
+    axx.plot(smth1, amp)
+
+    smth2 = np.arange(0.5, 0.5+len(psi))
     axxx.plot(np.arange(0.5, 0.5+len(psi)), psi)
 
-    link = f"https://files.rcsb.org/download/{name}.pdb"
-    texttt = requests.get(link).text
-    lines = re.findall('ATOM[^\S\r\n]+(\d+)[^\S\r\n]+(C8|C6)[^\S\r\n]+(DA|DG|DC|DT)[^\S\r\n]+([A-Z])[^\S\r\n]+(-?[0-9]+)[^\S\r\n]+'+"(-?\d+[\.\d]*)[^\S\r\n]*"*5+"([A-Z])",texttt)
+    lines = re.findall('ATOM[^\S\r\n]+(\d+)[^\S\r\n]+(C8|C6)[^\S\r\n]+(DA|DG|DC|DT)[^\S\r\n]+([A-Z])[^\S\r\n]+(-?[0-9]+)[^\S\r\n]+'+"(-?\d+[\.\d]*)[^\S\r\n]*"*5+"([A-Z])",name)
 
     # find helical axis
     qwer = []
@@ -278,7 +279,6 @@ with col3:
         stringio = io.StringIO(uploaded_file.getvalue().decode("utf-8"))
         
         seq = stringio.read()
-        st.write(seq)
 
 st.subheader("Please select the parameter you would like to predict/view")
 option = st.selectbox('', ('C0free prediction', 'C26free prediction', 'C29free prediction', 'C31free prediction', 'Spatial analysis'))
@@ -287,80 +287,79 @@ if len(seq) >= 50 and option == 'Spatial analysis':
     st.markdown("***")
     st.header(f"Spatial Visualization")
     st.markdown("please download the pdb file and view with pymol to see the vector force predictions")
-    pdbid = st.text_input('PDB ID','7OHC').upper()
+    col4, col5, col6 = st.columns([0.46, 0.08, 0.46])
+
+    with col4:
+        pdbid = st.text_input('PDB ID','7OHC').upper()
+        link = f"https://files.rcsb.org/download/{pdbid}.pdb"
+        texttt = requests.get(link).text
+
+    with col5:
+        st.subheader("OR")
+
+    with col6:
+        uploaded_pdb_file = st.file_uploader("upload a pdb file")
+
+        if uploaded_pdb_file is not None:
+            stringio = io.StringIO(uploaded_pdb_file.getvalue().decode("utf-8"))
+            texttt = stringio.read()
+    
     factor = st.text_input('vector length scale factor','e.g. 30')
     try:
-        longcode(seq, pdbid, int(factor))
-
-        file_nameu = st.text_input('file name', 'e.g. spatial_visualization.pdb')
-        show_st_3dmol(pdb_output)#, style_lst=[[{"chain":"H"}],[{"stick": {"colorscheme": "amino", "radius": 0.2}}]])
-        st.download_button('Download .pdb', pdb_output, file_name=f"{file_nameu}")
-            
-        st.markdown("***")
-        st.header(f"Amplitude Graph")
-        filetype = st.selectbox('amplitude graph file type', ('svg', 'png', 'jpeg'))
-            
-        imgg = io.BytesIO()
-        figg.savefig(imgg, format=filetype)
-        file_name3 = st.text_input('file name', f'e.g. amplitude_graph.{filetype}')
-        btn3 = st.download_button(
-                label="Download graph",
-                data=imgg,
-                file_name=f"{file_name3}",
-                mime=f"image/{filetype}"
-        )
-        st.pyplot(figg)
-        st.markdown("***")
-            
-        st.header(f"Phase Graph")
-        filetype2 = st.selectbox('phase graph file type', ('svg', 'png', 'jpeg'))
-            
-        imggg = io.BytesIO()
-        figgg.savefig(imgg, format=filetype2)
-        file_name4 = st.text_input('file name', f'e.g. phase_graph.{filetype2}')
-        btn4 = st.download_button(
-                label="Download graph",
-                data=imggg,
-                file_name=f"{file_name4}",
-                mime=f"image/{filetype2}"
-        )
-        st.pyplot(figgg)
-            
+        longcode(seq, texttt, int(factor))
     except:
-        longcode(seq, pdbid)
+        longcode(seq, texttt)
 
-        file_nameu = st.text_input('file name', 'e.g. spatial_visualization.pdb')
-        show_st_3dmol(pdb_output)#, style_lst=[{"chain":"H"},{"stick": {"colorscheme": "amino", "radius": 0.2}}])
-        st.download_button('Download .pdb', pdb_output, file_name=f"{file_nameu}")
+    file_nameu = st.text_input('file name', 'e.g. spatial_visualization.pdb')
+    show_st_3dmol(pdb_output)
+    st.download_button('Download .pdb', pdb_output, file_name=f"{file_nameu}")
             
-        st.markdown("***")
+    st.markdown("***")
+    st.header(f"Amplitude Graph")
+    filetype = st.selectbox('amplitude graph file type', ('svg', 'png', 'jpeg'))
             
-        st.header(f"Amplitude Graph")
-        filetype3 = st.selectbox('amplitude graph file type', ('svg', 'png', 'jpeg'))
-        imgg = io.BytesIO()
-        figg.savefig(imgg, format=filetype3)
-        file_name3 = st.text_input('file name', f'e.g. amplitude_graph.{filetype3}')
-        btn3 = st.download_button(
-                label="Download graph",
-                data=imgg,
-                file_name=f"{file_name3}",
-                mime=f"image/{filetype3}"
-        )
-        st.pyplot(figg)
-        st.markdown("***")
+    imgg = io.BytesIO()
+    figg.savefig(imgg, format=filetype)
+    file_name3 = st.text_input('file name', f'e.g. amplitude_graph.{filetype}')
+    btn3 = st.download_button(label="Download graph",data=imgg,file_name=f"{file_name3}",mime=f"image/{filetype}")
+    st.pyplot(figg)
+
+    st.markdown("***")
+    
+    st.header(f"Data for Amplitude Graph")
+    long_text11 = "data format in (x, y) coordinates\n"
+    for i in range(len(amp)):
+        long_text11 += f"{smth1[i]}, {amp[i]}\n"
+
+    file_name11 = st.text_input('file name', f'e.g. amplitude_data.txt')
+    
+    st.download_button('Download data', long_text11, file_name=f"{file_name11}")
+    
+    stx.scrollableTextbox(long_text11, height = 300)
+    
+    st.markdown("***")
             
-        st.header(f"Phase Graph")
-        filetype4 = st.selectbox('phase graph file type', ('svg', 'png', 'jpeg'))
-        imggg = io.BytesIO()
-        figgg.savefig(imgg, format=filetype4)
-        file_name4 = st.text_input('file name', f'e.g. phase_graph.{filetype4}')
-        btn4 = st.download_button(
-                label="Download graph",
-                data=imggg,
-                file_name=f"{file_name4}",
-                mime=f"image/{filetype4}"
-        )
-        st.pyplot(figgg)
+    st.header(f"Phase Graph")
+    filetype2 = st.selectbox('phase graph file type', ('svg', 'png', 'jpeg'))
+            
+    imggg = io.BytesIO()
+    figgg.savefig(imgg, format=filetype2)
+    file_name4 = st.text_input('file name', f'e.g. phase_graph.{filetype2}')
+    btn4 = st.download_button(label="Download graph",data=imggg,file_name=f"{file_name4}",mime=f"image/{filetype2}")
+    st.pyplot(figgg)
+
+    st.markdown("***")
+    
+    st.header(f"Data for Phase Graph")
+    long_text22 = "data format in (x, y) coordinates\n"
+    for i in range(len(psi)):
+        long_text22 += f"{smth2[i]}, {psi[i]}\n"
+
+    file_name22 = st.text_input('file name', f'e.g. phase_data.txt')
+    
+    st.download_button('Download data', long_text22, file_name=f"{file_name22}")
+    
+    stx.scrollableTextbox(long_text22, height = 300)
             
 elif len(seq) >= 50:
     list50 = [seq[i:i+50] for i in range(len(seq)-50+1)]
