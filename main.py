@@ -83,7 +83,7 @@ def func(x): # x = [C0, amp, psi, c26_, c29_, c31_]
             c31_ - x[0] - x[1]**2*math.cos((29.5/10.3-2)*2*math.pi-math.pi*2/3 - x[2])]
 
 def show_st_3dmol(pdb_code,style_lst=None,label_lst=None,reslabel_lst=None,zoom_dict=None,surface_lst=None,cartoon_style="oval",
-                  cartoon_radius=0.2,cartoon_color="spectrum",zoom=1,spin_on=False,width=900,height=600):
+                  cartoon_radius=0.2,cartoon_color="lightgray",zoom=1,spin_on=False,width=900,height=600):
 
     view = py3Dmol.view(width=width, height=height)
     view.addModelsAsFrames(pdb_code)
@@ -93,33 +93,21 @@ def show_st_3dmol(pdb_code,style_lst=None,label_lst=None,reslabel_lst=None,zoom_
     style_lst = []
     surface_lst = []
     
-    surface_lst.append([{"opacity": 1, "color": "green"}, {"chain": "Z"}])
+    view.addStyle({'chain':'Z'}, {'stick': {"color": "blue"}})
 
-    style_lst.append([{"chain": "Z"},{"cartoon": {"style": cartoon_style,"color": "green","thickness": 0.2,"opacity": 1}}])
-            
-    if surface_lst is not None:
-        for surface in surface_lst:
-            view.addSurface(py3Dmol.VDW, surface[0], surface[1])
-
-    if style_lst is not None:
-        for style in style_lst:
-            view.addStyle(style[0],style[1])
-
-    if label_lst is not None:
-        for label in label_lst:
-            view.addLabel(label[0], label[1], label[2])
-
-    if reslabel_lst is not None:
-        for reslabel in reslabel_lst:
-            view.addResLabels(reslabel[0], reslabel[1])
-
-    if zoom_dict is None:
-        view.zoomTo()
-    else:
-        view.zoomTo(zoom_dict)
-
+    view.addStyle({'chain':'A'}, {'line': {}})
+    view.addStyle({'chain':'B'}, {'line': {}})
+    view.addStyle({'chain':'C'}, {'line': {}})
+    view.addStyle({'chain':'D'}, {'line': {}})
+    view.addStyle({'chain':'E'}, {'line': {}})
+    view.addStyle({'chain':'F'}, {'line': {}})
+    view.addStyle({'chain':'G'}, {'line': {}})
+    view.addStyle({'chain':'H'}, {'line': {}})
+    view.addStyle({'chain':'I'}, {'line': {}})
+    view.addStyle({'chain':'J'}, {'line': {}})
+    
+    view.zoomTo()
     view.spin(spin_on)
-
     view.zoom(zoom)
     showmol(view, height=height, width=width)
 
@@ -245,12 +233,12 @@ def longcode(sequence, name, factor=30):
     e = np.around(e, 3)
 
     for j in range(len(o)):
-        pdb_output += 'HETATM' + str(j+1).rjust(5) + ' H    AXI ' + 'Z' + '   1    ' # '    1' 5d
+        pdb_output += 'HETATM' + str(j+1).rjust(5) + ' C    AXI ' + 'Z' + '   1    ' # '    1' 5d
         for k in range(3):
             pdb_output += str(o[j][k]).rjust(8)
         pdb_output += '\n'
     for j in range(len(e)):
-        pdb_output += 'HETATM' + str(j+len(o)+1).rjust(5) + ' H    AXI ' + 'Z' + '   1    ' # '    1' 5d
+        pdb_output += 'HETATM' + str(j+len(o)+1).rjust(5) + ' C    AXI ' + 'Z' + '   1    ' # '    1' 5d
         for k in range(3):
             pdb_output += str(round(e[j][k], 2)).rjust(8)
         pdb_output += '\n'
@@ -327,14 +315,15 @@ if len(seq) >= 50 and option == 'Spatial analysis':
     st.markdown("***")
     
     st.header(f"Data for Amplitude Graph")
-    long_text11 = "data format in (x, y) coordinates\n"
+    long_text11 = ""
     for i in range(len(amp)):
         long_text11 += f"{smth1[i]}, {amp[i]}\n"
 
     file_name11 = st.text_input('file name', f'e.g. amplitude_data.txt')
     
     st.download_button('Download data', long_text11, file_name=f"{file_name11}")
-    
+
+    st.markdown("data format in (x, y) coordinates")
     stx.scrollableTextbox(long_text11, height = 300)
     
     st.markdown("***")
@@ -351,14 +340,16 @@ if len(seq) >= 50 and option == 'Spatial analysis':
     st.markdown("***")
     
     st.header(f"Data for Phase Graph")
-    long_text22 = "data format in (x, y) coordinates\n"
+    
+    long_text22 = ""
     for i in range(len(psi)):
         long_text22 += f"{smth2[i]}, {psi[i]}\n"
 
     file_name22 = st.text_input('file name', f'e.g. phase_data.txt')
     
     st.download_button('Download data', long_text22, file_name=f"{file_name22}")
-    
+
+    st.markdown("data format in (x, y) coordinates")
     stx.scrollableTextbox(long_text22, height = 300)
             
 elif len(seq) >= 50:
