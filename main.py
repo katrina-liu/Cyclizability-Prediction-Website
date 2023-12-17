@@ -82,11 +82,12 @@ def func(x): # x = [C0, amp, psi, c26_, c29_, c31_]
             c29_ - x[0] - x[1]**2*math.cos((31.5/10.3-3)*2*math.pi-math.pi*2/3 - x[2]),
             c31_ - x[0] - x[1]**2*math.cos((29.5/10.3-2)*2*math.pi-math.pi*2/3 - x[2])]
 
-def show_st_3dmol(pdb_code,style_lst=None,label_lst=None,reslabel_lst=None,zoom_dict=None,surface_lst=None,cartoon_style="oval",
+def show_st_3dmol(pdb_code,original_pdb,style_lst=None,label_lst=None,reslabel_lst=None,zoom_dict=None,surface_lst=None,cartoon_style="oval",
                   cartoon_radius=0.2,cartoon_color="lightgray",zoom=1,spin_on=False,width=900,height=600):
 
     view = py3Dmol.view(width=width, height=height)
     view.addModelsAsFrames(pdb_code)
+    view.addModelsAsFrames(original_pdb)
 
     view.setStyle({"cartoon": {"style": cartoon_style,"color": cartoon_color,"thickness": cartoon_radius}})
 
@@ -208,8 +209,9 @@ def longcode(sequence, name, factor=30):
             qwer.append([float(line[_]) for _ in range(5, 8)])
         if line[2] in ['DT', 'DC'] and line[1] == 'C6':
             qwer.append([float(line[_]) for _ in range(5, 8)])
-
-    qwer, asdf = np.array(qwer[:len(qwer)//2]), np.array(qwer[-len(qwer)//2:][::-1])
+            
+    qwer, asdf = np.array(qwer[:len(qwer)//2]), np.array(qwer[-(len(qwer)//2):][::-1])
+    
     otemp = (qwer+asdf)/2
     o = np.array([(otemp[i+1]+otemp[i])/2 for i in range(len(otemp)-1)])
     ytemp = qwer - asdf
@@ -247,26 +249,30 @@ def longcode(sequence, name, factor=30):
     for j in range(len(o)):
         pdb_output += 'CONECT' + str(j+1).rjust(5) + str(j+len(o)+1).rjust(5) + '\n' # CONECT    1    2
 
-    pdb_output += texttt
-
 st.title("Cyclizability Prediction")
 
 st.subheader("Please provide a sequence (longer than 50 nucleotides)")
 col1, col2, col3 = st.columns([0.46, 0.08, 0.46])
 
+seq = ''
 with col1:
-    seq = st.text_input('input a sequence', 'GTAGC...') # seq = 'AGTTC...' ask user for it
-
+    pdbid = st.text_input('PDB ID','7OHC').upper()
+    link = f"https://files.rcsb.org/download/{pdbid}.pdb"
+    sequencelink = f"https://www.rcsb.org/fasta/entry/{pdbid}"
+    texttt = requests.get(link).text
+    seq = re.findall("\n[A|C|G|T]+\n", requests.get(sequencelink).text)[0][1:-1]
 with col2:
     st.subheader("OR")
 
 with col3:
-    uploaded_file = st.file_uploader("upload a sequence")
+    seq = st.text_input('input a sequence', seq)
+    
+    uploaded_file = st.file_uploader("upload a pdb file")
 
     if uploaded_file is not None:
         stringio = io.StringIO(uploaded_file.getvalue().decode("utf-8"))
         
-        seq = stringio.read()
+        texttt = stringio.read()
 
 st.subheader("Please select the parameter you would like to predict/view")
 option = st.selectbox('', ('C0free prediction', 'C26free prediction', 'C29free prediction', 'C31free prediction', 'Spatial analysis'))
@@ -275,22 +281,6 @@ if len(seq) >= 50 and option == 'Spatial analysis':
     st.markdown("***")
     st.header(f"Spatial Visualization")
     st.markdown("please download the pdb file and view with pymol to see the vector force predictions")
-    col4, col5, col6 = st.columns([0.46, 0.08, 0.46])
-
-    with col4:
-        pdbid = st.text_input('PDB ID','7OHC').upper()
-        link = f"https://files.rcsb.org/download/{pdbid}.pdb"
-        texttt = requests.get(link).text
-
-    with col5:
-        st.subheader("OR")
-
-    with col6:
-        uploaded_pdb_file = st.file_uploader("upload a pdb file")
-
-        if uploaded_pdb_file is not None:
-            stringio = io.StringIO(uploaded_pdb_file.getvalue().decode("utf-8"))
-            texttt = stringio.read()
     
     factor = st.text_input('vector length scale factor','e.g. 30')
     try:
@@ -299,7 +289,7 @@ if len(seq) >= 50 and option == 'Spatial analysis':
         longcode(seq, texttt)
 
     file_nameu = st.text_input('file name', 'e.g. spatial_visualization.pdb')
-    show_st_3dmol(pdb_output)
+    show_st_3dmol(pdb_output,texttt)
     st.download_button('Download .pdb', pdb_output, file_name=f"{file_nameu}")
             
     st.markdown("***")
