@@ -32,29 +32,29 @@ import streamlit_scrollable_textbox as stx
 
 root = './adapter-free-Model'
 
-@st.cache_resource
+@st.cache_resource(max_entries=5)
 def load_model0():
     return keras.models.load_model(root + '/C0free')
 
-@st.cache_resource
+@st.cache_resource(max_entries=5)
 def load_model26():
     return keras.models.load_model(root + '/C26free')
 
-@st.cache_resource
+@st.cache_resource(max_entries=5)
 def load_model29():
     return keras.models.load_model(root + '/C29free')
 
-@st.cache_resource
+@st.cache_resource(max_entries=5)
 def load_model31():
     return keras.models.load_model(root + '/C31free')
 
-@st.cache_data
+@st.cache_data(max_entries=5)
 def getSequence(pbdid):
     sequencelink = f"https://www.rcsb.org/fasta/entry/{pbdid}"
     seq = re.findall("\n[A|C|G|T]+\n", requests.get(sequencelink).text)[0][1:-1]
     return seq
 
-@st.cache_data
+@st.cache_data(max_entries=5)
 def getTexttt(pbdid): 
     link = f"https://files.rcsb.org/download/{pbdid}.pdb"
     texttt = requests.get(link).text
@@ -74,7 +74,7 @@ def pred(model, pool):
     A = model.predict(input, batch_size=128).reshape(len(pool), )
     return A
 
-@st.cache_data
+@st.cache_data(max_entries=5)
 def envelope(x, y):
     x, y = list(x), list(y)
     uidx, ux, uy = [0], [x[0]], [y[0]]
@@ -112,7 +112,7 @@ def func(x): # x = [C0, amp, psi, c26_, c29_, c31_]
             c29_ - x[0] - x[1]**2*math.cos((31.5/10.3-3)*2*math.pi-math.pi*2/3 - x[2]),
             c31_ - x[0] - x[1]**2*math.cos((29.5/10.3-2)*2*math.pi-math.pi*2/3 - x[2])]
 
-@st.cache_data
+@st.cache_data(max_entries=5)
 def show_st_3dmol(pdb_code,original_pdb,style_lst=None,label_lst=None,reslabel_lst=None,zoom_dict=None,surface_lst=None,cartoon_style="oval",
                   cartoon_radius=0.2,cartoon_color="lightgray",zoom=1,spin_on=False,width=900,height=600):
 
