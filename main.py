@@ -281,33 +281,40 @@ def longcode(sequence, name, factor=30):
     for j in range(len(o)):
         pdb_output += 'CONECT' + str(j+1).rjust(5) + str(j+len(o)+1).rjust(5) + '\n' # CONECT    1    2
 
-st.title("Cyclizability Prediction")
+st.title("Cyclizability Prediction\n")
+st.markdown("---")
+st.subheader("website guide")
+st.markdown("***functions*** + ***parameters***")
+st.markdown("***:blue[spatial visualization function]***: ***:green[pdb id]*** OR ***:violet[custom sequence + pdb file]***")
+st.markdown("***:blue[C0, C26, C29, or C31 predictions]***: ***:green[pdb id (fasta sequence >= 50bp)]*** OR ***:violet[custom sequence (>= 50bp)]***")
+st.markdown("---")
 
-st.subheader("Please provide a sequence (longer than 50 nucleotides)")
 col1, col2, col3 = st.columns([0.46, 0.08, 0.46])
-
 seq = ''
 with col1:
-    pdbid = st.text_input('PDB ID','7OHC').upper()
-    texttt = getTexttt(pdbid)
-    seq = getSequence(pdbid)
+    seq = st.text_input('input a sequence', seq)
+    texttt = ''
 with col2:
     st.subheader("OR")
-
 with col3:
-    seq = st.text_input('input a sequence', seq)
-    
+    pdbid = st.text_input('PDB ID','7OHC').upper()
+    texttt=''
+    if pdbid != '':
+        try:
+            texttt = getTexttt(pdbid)
+            seq = getSequence(pdbid)
+        except:
+            pass
     uploaded_file = st.file_uploader("upload a pdb file")
 
     if uploaded_file is not None:
-        stringio = io.StringIO(uploaded_file.getvalue().decode("utf-8"))
-        
+        stringio = io.StringIO(uploaded_file.getvalue().decode("utf-8"))        
         texttt = stringio.read()
-
+st.markdown("---")
 st.subheader("Please select the parameter you would like to predict/view")
-option = st.selectbox('', ('C0free prediction', 'C26free prediction', 'C29free prediction', 'C31free prediction', 'Spatial analysis'))
+option = st.selectbox('', ('Spatial analysis', 'C0free prediction', 'C26free prediction', 'C29free prediction', 'C31free prediction'))
 
-if len(seq) >= 50 and option == 'Spatial analysis':
+if option == 'Spatial analysis' and seq != '' and texttt != '':
     st.markdown("***")
     st.header(f"Spatial Visualization")
     
@@ -370,7 +377,8 @@ if len(seq) >= 50 and option == 'Spatial analysis':
 
     st.markdown("data format in (x, y) coordinates")
     stx.scrollableTextbox(long_text22, height = 300)
-            
+elif option == 'Spatial analysis' and texttt == '' and seq != '':
+    st.subheader(":red[Please attach a pdb file to visualize]")
 elif len(seq) >= 50:
     list50 = [seq[i:i+50] for i in range(len(seq)-50+1)]
 
@@ -411,3 +419,5 @@ elif len(seq) >= 50:
     st.download_button('Download data', long_text, file_name=f"{file_name}")
     
     stx.scrollableTextbox(long_text, height = 300)
+else:
+    st.subheader(":red[Please provide a sequence (>= 50bp) or a pdb id/file]")
