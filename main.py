@@ -31,10 +31,39 @@ import requests
 import streamlit_scrollable_textbox as stx
 
 root = './adapter-free-Model'
-model0 = keras.models.load_model(root + '/C0free')
-model26 = keras.models.load_model(root + '/C26free')
-model29 = keras.models.load_model(root + '/C29free')
-model31 = keras.models.load_model(root + '/C31free')
+
+@st.cache_resource
+def load_model0():
+    return keras.models.load_model(root + '/C0free')
+
+@st.cache_resource
+def load_model26():
+    return keras.models.load_model(root + '/C26free')
+
+@st.cache_resource
+def load_model29():
+    return keras.models.load_model(root + '/C29free')
+
+@st.cache_resource
+def load_model31():
+    return keras.models.load_model(root + '/C31free')
+
+@st.cache_data
+def getSequence(pbdid):
+    sequencelink = f"https://www.rcsb.org/fasta/entry/{pbdid}"
+    seq = re.findall("\n[A|C|G|T]+\n", requests.get(sequencelink).text)[0][1:-1]
+    return seq
+
+@st.cache_data
+def getTexttt(pbdid): 
+    link = f"https://files.rcsb.org/download/{pbdid}.pdb"
+    texttt = requests.get(link).text
+    return texttt
+
+model0 = load_model0()
+model26 = load_model26()
+model29 = load_model29()
+model31 = load_model31()
 
 def pred(model, pool): 
     input = np.zeros((len(pool), 200))
@@ -45,6 +74,7 @@ def pred(model, pool):
     A = model.predict(input, batch_size=128).reshape(len(pool), )
     return A
 
+@st.cache_data
 def envelope(x, y):
     x, y = list(x), list(y)
     uidx, ux, uy = [0], [x[0]], [y[0]]
@@ -82,6 +112,7 @@ def func(x): # x = [C0, amp, psi, c26_, c29_, c31_]
             c29_ - x[0] - x[1]**2*math.cos((31.5/10.3-3)*2*math.pi-math.pi*2/3 - x[2]),
             c31_ - x[0] - x[1]**2*math.cos((29.5/10.3-2)*2*math.pi-math.pi*2/3 - x[2])]
 
+@st.cache_data
 def show_st_3dmol(pdb_code,original_pdb,style_lst=None,label_lst=None,reslabel_lst=None,zoom_dict=None,surface_lst=None,cartoon_style="oval",
                   cartoon_radius=0.2,cartoon_color="lightgray",zoom=1,spin_on=False,width=900,height=600):
 
@@ -117,6 +148,7 @@ figgg, axxx = plt.subplots()
 pdb_output = "HEADER    output from spatial analysis\n"
 c26_, c29_, c31_ = None, None, None
 amp, smth1, psi, smth2 = [], [], [], []
+
 def longcode(sequence, name, factor=30):
     global figg, axx, figgg, axxx, pdb_output, c26_, c29_, c31_, amp, smth1, psi, smth2
     
@@ -257,10 +289,8 @@ col1, col2, col3 = st.columns([0.46, 0.08, 0.46])
 seq = ''
 with col1:
     pdbid = st.text_input('PDB ID','7OHC').upper()
-    link = f"https://files.rcsb.org/download/{pdbid}.pdb"
-    sequencelink = f"https://www.rcsb.org/fasta/entry/{pdbid}"
-    texttt = requests.get(link).text
-    seq = re.findall("\n[A|C|G|T]+\n", requests.get(sequencelink).text)[0][1:-1]
+    texttt = getTexttt(pdbid)
+    seq = getSequence(pdbid)
 with col2:
     st.subheader("OR")
 
@@ -280,6 +310,7 @@ option = st.selectbox('', ('C0free prediction', 'C26free prediction', 'C29free p
 if len(seq) >= 50 and option == 'Spatial analysis':
     st.markdown("***")
     st.header(f"Spatial Visualization")
+    st.markdown("please download the pdb file and view with pymol to see the vector force predictions")
     
     factor = st.text_input('vector length scale factor','e.g. 30')
     try:
