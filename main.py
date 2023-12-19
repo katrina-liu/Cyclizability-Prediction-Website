@@ -34,7 +34,7 @@ import streamlit_js_eval
 swidth = streamlit_js_eval.streamlit_js_eval(js_expressions='screen.width', want_output = True, key = 'SCR')
 
 def computer():
-    return (swidth >= 1000) ? True : False
+    return True if swidth >= 1000 else False
 
 root = './adapter-free-Model'
 
@@ -163,7 +163,7 @@ def show_st_3dmol(pdb_code,original_pdb,style_lst=None,label_lst=None,reslabel_l
     view.zoom(zoom)
 
     #showmol(view, height=600, width=900)
-    if computer > 1000:
+    if computer():
         showmol(view, height=int(swidth/3), width=int(swidth/2))
     else:
         showmol(view, height=int(swidth), width=int(swidth))
