@@ -9,3 +9,4 @@ streamlit_scrollable_textbox
 stmol
 py3Dmol
 ipython_genutils
+streamlit_js_eval
