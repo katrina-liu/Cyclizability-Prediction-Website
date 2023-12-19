@@ -32,6 +32,7 @@ import streamlit_scrollable_textbox as stx
 import streamlit_js_eval
 
 swidth = streamlit_js_eval.streamlit_js_eval(js_expressions='screen.width', want_output = True, key = 'SCR')
+st.write(f"{swidth}: {type(swidth)}")
 
 root = './adapter-free-Model'
 
