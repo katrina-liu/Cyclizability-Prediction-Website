@@ -113,15 +113,18 @@ def func(x): # x = [C0, amp, psi, c26_, c29_, c31_]
             c29_ - x[0] - x[1]**2*math.cos((31.5/10.3-3)*2*math.pi-math.pi*2/3 - x[2]),
             c31_ - x[0] - x[1]**2*math.cos((29.5/10.3-2)*2*math.pi-math.pi*2/3 - x[2])]
 
-screen_width = streamlit_js_eval.streamlit_js_eval(js_expressions='screen.width', key = 'SCR')
+@st.cache_data(max_entries=5)
+def screenn():
+    return streamlit_js_eval.streamlit_js_eval(js_expressions='screen.width', key = 'SCR')
+    
 @st.cache_data(max_entries=5)
 def show_st_3dmol(pdb_code,original_pdb,style_lst=None,label_lst=None,reslabel_lst=None,zoom_dict=None,surface_lst=None,cartoon_style="oval",
                   cartoon_radius=0.2,cartoon_color="lightgray",zoom=1,spin_on=False):
 
     if screen_width > 1000:
-        view = py3Dmol.view(width=int(screen_width/2), height=int(screen_width/3))
+        view = py3Dmol.view(width=int(screenn()/2), height=int(screenn()/3))
     else:
-        view = py3Dmol.view(width=int(screen_width), height=int(screen_width))
+        view = py3Dmol.view(width=int(screenn()), height=int(screenn()))
     view.addModelsAsFrames(pdb_code)
     view.addModelsAsFrames(original_pdb)
 
@@ -148,9 +151,9 @@ def show_st_3dmol(pdb_code,original_pdb,style_lst=None,label_lst=None,reslabel_l
     view.zoom(zoom)
     
     if screen_width > 1000:
-        showmol(view, height=int(screen_width/3), width=int(screen_width/2))
+        showmol(view, height=int(screenn()/3), width=int(screenn()/2))
     else:
-        showmol(view, height=int(screen_width), width=int(screen_width))
+        showmol(view, height=int(screenn()), width=int(screenn()))
 
 figg, axx = plt.subplots()
 figgg, axxx = plt.subplots()
