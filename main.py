@@ -121,7 +121,7 @@ def screenn():
 def show_st_3dmol(pdb_code,original_pdb,style_lst=None,label_lst=None,reslabel_lst=None,zoom_dict=None,surface_lst=None,cartoon_style="oval",
                   cartoon_radius=0.2,cartoon_color="lightgray",zoom=1,spin_on=False):
 
-    if screen_width > 1000:
+    if screenn() > 1000:
         view = py3Dmol.view(width=int(screenn()/2), height=int(screenn()/3))
     else:
         view = py3Dmol.view(width=int(screenn()), height=int(screenn()))
@@ -150,7 +150,7 @@ def show_st_3dmol(pdb_code,original_pdb,style_lst=None,label_lst=None,reslabel_l
     view.spin(spin_on)
     view.zoom(zoom)
     
-    if screen_width > 1000:
+    if screenn() > 1000:
         showmol(view, height=int(screenn()/3), width=int(screenn()/2))
     else:
         showmol(view, height=int(screenn()), width=int(screenn()))
