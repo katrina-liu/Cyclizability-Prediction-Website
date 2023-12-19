@@ -117,8 +117,11 @@ screen_width = streamlit_js_eval.streamlit_js_eval(js_expressions='screen.width'
 @st.cache_data(max_entries=5)
 def show_st_3dmol(pdb_code,original_pdb,style_lst=None,label_lst=None,reslabel_lst=None,zoom_dict=None,surface_lst=None,cartoon_style="oval",
                   cartoon_radius=0.2,cartoon_color="lightgray",zoom=1,spin_on=False):
-    
-    view = py3Dmol.view(width=int(screen_width), height=int(screen_width/3))
+
+    if screen_width > 1000:
+        view = py3Dmol.view(width=int(screen_width/2), height=int(screen_width/3))
+    else:
+        view = py3Dmol.view(width=int(screen_width), height=int(screen_width))
     view.addModelsAsFrames(pdb_code)
     view.addModelsAsFrames(original_pdb)
 
@@ -143,7 +146,11 @@ def show_st_3dmol(pdb_code,original_pdb,style_lst=None,label_lst=None,reslabel_l
     view.zoomTo()
     view.spin(spin_on)
     view.zoom(zoom)
-    showmol(view, height=int(screen_width/3), width=int(screen_width))
+    
+    if screen_width > 1000:
+        showmol(view, height=int(screen_width/3), width=int(screen_width/2))
+    else:
+        showmol(view, height=int(screen_width), width=int(screen_width))
 
 figg, axx = plt.subplots()
 figgg, axxx = plt.subplots()
