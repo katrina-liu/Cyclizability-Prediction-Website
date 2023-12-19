@@ -118,7 +118,7 @@ def func(x): # x = [C0, amp, psi, c26_, c29_, c31_]
             c29_ - x[0] - x[1]**2*math.cos((31.5/10.3-3)*2*math.pi-math.pi*2/3 - x[2]),
             c31_ - x[0] - x[1]**2*math.cos((29.5/10.3-2)*2*math.pi-math.pi*2/3 - x[2])]
 
-screenn = streamlit_js_eval.streamlit_js_eval(js_expressions='screen.width', key = "SCR")
+screenn = streamlit_js_eval.streamlit_js_eval(js_expressions='screen.width', want_output = True, key = "SCR")
 
 def disp_width():
     return screenn
