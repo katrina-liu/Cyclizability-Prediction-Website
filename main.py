@@ -114,8 +114,7 @@ def func(x): # x = [C0, amp, psi, c26_, c29_, c31_]
             c31_ - x[0] - x[1]**2*math.cos((29.5/10.3-2)*2*math.pi-math.pi*2/3 - x[2])]
 
 screenn = streamlit_js_eval.streamlit_js_eval(js_expressions='screen.width', key = "SCR")
-    
-@st.cache_data(max_entries=5)
+
 def show_st_3dmol(pdb_code,original_pdb,style_lst=None,label_lst=None,reslabel_lst=None,zoom_dict=None,surface_lst=None,cartoon_style="oval",
                   cartoon_radius=0.2,cartoon_color="lightgray",zoom=1,spin_on=False):
 
