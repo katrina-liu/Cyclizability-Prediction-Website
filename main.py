@@ -33,9 +33,6 @@ import streamlit_js_eval
 
 swidth = streamlit_js_eval.streamlit_js_eval(js_expressions='screen.width', want_output = True, key = 'SCR')
 
-def computer():
-    return True if swidth >= 1000 else False
-
 root = './adapter-free-Model'
 
 @st.cache_resource(max_entries=5)
@@ -132,10 +129,10 @@ def show_st_3dmol(pdb_code,original_pdb,style_lst=None,label_lst=None,reslabel_l
                   cartoon_radius=0.2,cartoon_color="lightgray",zoom=1,spin_on=False):
 
     #view = py3Dmol.view(width=900, height=600)
-    if computer():
-        view = py3Dmol.view(width=int(swidth/2), height=int(swidth/3))
-    else:
-        view = py3Dmol.view(width=int(swidth), height=int(swidth))
+    #if computer():
+    #view = py3Dmol.view(width=int(swidth/2), height=int(swidth/3))
+    #else:
+    view = py3Dmol.view(width=int(swidth), height=int(swidth))
         
     view.addModelsAsFrames(pdb_code)
     view.addModelsAsFrames(original_pdb)
@@ -163,10 +160,10 @@ def show_st_3dmol(pdb_code,original_pdb,style_lst=None,label_lst=None,reslabel_l
     view.zoom(zoom)
 
     #showmol(view, height=600, width=900)
-    if computer():
-        showmol(view, height=int(swidth/3), width=int(swidth/2))
-    else:
-        showmol(view, height=int(swidth), width=int(swidth))
+    #if computer():
+    #    showmol(view, height=int(swidth/3), width=int(swidth/2))
+    #else:
+    showmol(view, height=int(swidth), width=int(swidth))
 
 figg, axx = plt.subplots()
 figgg, axxx = plt.subplots()
