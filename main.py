@@ -50,16 +50,21 @@ def load_model31():
     return keras.models.load_model(root + '/C31free')
 
 @st.cache_data(max_entries=5)
-def getSequence(pbdid):
-    sequencelink = f"https://www.rcsb.org/fasta/entry/{pbdid}"
-    seq = re.findall("\n[A|C|G|T]+\n", requests.get(sequencelink).text)[0][1:-1]
-    return seq
-
-@st.cache_data(max_entries=5)
 def getTexttt(pbdid): 
     link = f"https://files.rcsb.org/download/{pbdid}.pdb"
     texttt = requests.get(link).text
     return texttt
+
+@st.cache_data(max_entries=5)
+def getSequence(pbdid):
+    sequencelink = f"https://www.rcsb.org/fasta/entry/{pbdid}"
+    tt = requests.get(sequencelink).text
+    seq = re.findall("\n[A|C|G|T]+\n", tt)[0][1:-1]
+    chain = ''.join(re.findall(f">{pbdid.upper()}_\d|Chain ([A-Z])|DNA \(\d+-MER\)|synthetic construct \(\d+\)\n[A|C|G|T]+\n",tt))[0]
+    otherlink = f'https://files.rcsb.org/download/{pbdid}.cif'
+    texttt = requests.get(otherlink).text
+    stuff = re.findall(f'ATOM[^\S\r\n]+(\d+)[^\S\r\n]+([A-Z])[^\S\r\n]+(\"?[A-Z]+\d*\'?\"?)[^\S\r\n]+\.[^\S\r\n]+([A-Z]+)[^\S\r\n]+{chain}[^\S\r\n]+([0-9]+)[^\S\r\n]+([0-9]+).+\n',texttt)
+    return seq[int(stuff[0][5])-1:int(stuff[-1][5])]
 
 model0 = load_model0()
 model26 = load_model26()
@@ -311,7 +316,7 @@ with col2:
 with col3:
     pdbid = st.text_input('PDB ID','7OHC').upper()
     texttt=''
-    if pdbid != '':
+    if pdbid != '' and seq == '':
         try:
             texttt = getTexttt(pdbid)
             seq = getSequence(pdbid)
@@ -322,6 +327,7 @@ with col3:
     if uploaded_file is not None:
         stringio = io.StringIO(uploaded_file.getvalue().decode("utf-8"))        
         texttt = stringio.read()
+        
 st.markdown("---")
 st.subheader("Please select the parameter you would like to predict/view")
 option = st.selectbox('', ('Spatial analysis', 'C0free prediction', 'C26free prediction', 'C29free prediction', 'C31free prediction'))
