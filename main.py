@@ -31,8 +31,7 @@ import requests
 import streamlit_scrollable_textbox as stx
 import streamlit_js_eval
 
-swidth = streamlit_js_eval.streamlit_js_eval(js_expressions='screen.width', want_output = True, key = 'SCR')
-st.write(f"{swidth}: {type(swidth)}")
+swidth = int(streamlit_js_eval.streamlit_js_eval(js_expressions='screen.width', want_output = True, key = 'SCR'))
 
 root = './adapter-free-Model'
 
@@ -130,10 +129,13 @@ def show_st_3dmol(pdb_code,original_pdb,style_lst=None,label_lst=None,reslabel_l
                   cartoon_radius=0.2,cartoon_color="lightgray",zoom=1,spin_on=False):
 
     #view = py3Dmol.view(width=900, height=600)
-    #if computer():
-    #view = py3Dmol.view(width=int(swidth/2), height=int(swidth/3))
-    #else:
-    view = py3Dmol.view(width=int(swidth), height=int(swidth))
+    try:
+        if swidth >= 1000:
+            view = py3Dmol.view(width=int(swidth/2), height=int(swidth/3))
+        else:
+            view = py3Dmol.view(width=int(swidth), height=int(swidth))
+    except:
+        pass
         
     view.addModelsAsFrames(pdb_code)
     view.addModelsAsFrames(original_pdb)
@@ -161,10 +163,13 @@ def show_st_3dmol(pdb_code,original_pdb,style_lst=None,label_lst=None,reslabel_l
     view.zoom(zoom)
 
     #showmol(view, height=600, width=900)
-    #if computer():
-    #    showmol(view, height=int(swidth/3), width=int(swidth/2))
-    #else:
-    showmol(view, height=int(swidth), width=int(swidth))
+    try:
+        if computer():
+            showmol(view, height=int(swidth/3), width=int(swidth/2))
+        else:
+            showmol(view, height=int(swidth), width=int(swidth))
+    except:
+        pass
 
 figg, axx = plt.subplots()
 figgg, axxx = plt.subplots()
