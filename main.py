@@ -125,6 +125,7 @@ def func(x): # x = [C0, amp, psi, c26_, c29_, c31_]
 #def disp_width():
 #    return screenn
 
+@st.cache_data(max_entries=5)
 def show_st_3dmol(pdb_code,original_pdb,style_lst=None,label_lst=None,reslabel_lst=None,zoom_dict=None,surface_lst=None,cartoon_style="oval",
                   cartoon_radius=0.2,cartoon_color="lightgray",zoom=1,spin_on=False):
                       
@@ -163,15 +164,13 @@ def show_st_3dmol(pdb_code,original_pdb,style_lst=None,label_lst=None,reslabel_l
     else:
         showmol(view, height=int(swidth), width=int(swidth))
 
-figg, axx = plt.subplots()
-figgg, axxx = plt.subplots()
-pdb_output = "HEADER    output from spatial analysis\n"
 c26_, c29_, c31_ = None, None, None
-amp, smth1, psi, smth2 = [], [], [], []
 
+@st.cache_data(hash_funcs={"MyUnhashableClass": lambda _: None})
 def longcode(sequence, name, factor=30):
-    global figg, axx, figgg, axxx, pdb_output, c26_, c29_, c31_, amp, smth1, psi, smth2
+    global c26_, c29_, c31_
     
+    pdb_output = "HEADER    output from spatial analysis\n"
     L = 200
     pool = []
     base = ['A','T','G','C']
@@ -242,16 +241,6 @@ def longcode(sequence, name, factor=30):
     amp = amp[25:-25]
     psi = psi[25:-25]
 
-    plt.figure(figsize=(10, 3))
-    plt.gca().spines['top'].set_visible(False)
-    plt.gca().spines['right'].set_visible(False)
-
-    smth1 = np.arange(0.5, 0.5+len(amp))
-    axx.plot(smth1, amp)
-
-    smth2 = np.arange(0.5, 0.5+len(psi))
-    axxx.plot(np.arange(0.5, 0.5+len(psi)), psi)
-
     lines = re.findall('ATOM[^\S\r\n]+(\d+)[^\S\r\n]+(C8|C6)[^\S\r\n]+(DA|DG|DC|DT)[^\S\r\n]+([A-Z])[^\S\r\n]+(-?[0-9]+)[^\S\r\n]+'+"(-?\d+[\.\d]*)[^\S\r\n]*"*5+"([A-Z])",name)
 
     # find helical axis
@@ -301,6 +290,8 @@ def longcode(sequence, name, factor=30):
     for j in range(len(o)):
         pdb_output += 'CONECT' + str(j+1).rjust(5) + str(j+len(o)+1).rjust(5) + '\n' # CONECT    1    2
 
+    return pdb_output, amp, psi
+
 st.title("Cyclizability Prediction\n")
 st.markdown("---")
 st.subheader("website guide")
@@ -341,10 +332,22 @@ if option == 'Spatial analysis' and seq != '' and texttt != '':
     
     factor = st.text_input('vector length scale factor','e.g. 30')
     try:
-        longcode(seq, texttt, int(factor))
+        pdb_output, amp, psi = longcode(seq, texttt, int(factor))
     except:
-        longcode(seq, texttt)
+        pdb_output, amp, psi = longcode(seq, texttt)
 
+    figg, axx = plt.subplots()
+    figgg, axxx = plt.subplots()
+    
+    plt.figure(figsize=(10, 3))
+    plt.gca().spines['top'].set_visible(False)
+    plt.gca().spines['right'].set_visible(False)
+
+    smth1 = np.arange(0.5, 0.5+len(amp))
+    smth2 = np.arange(0.5, 0.5+len(psi))
+    axx.plot(smth1, amp)
+    axxx.plot(smth2, psi)
+    
     file_nameu = st.text_input('file name', 'e.g. spatial_visualization.pdb')
     show_st_3dmol(pdb_output,texttt)
     st.download_button('Download .pdb', pdb_output, file_name=f"{file_nameu}")
