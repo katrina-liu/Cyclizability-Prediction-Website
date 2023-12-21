@@ -125,7 +125,6 @@ def func(x): # x = [C0, amp, psi, c26_, c29_, c31_]
 #def disp_width():
 #    return screenn
 
-@st.cache_data(max_entries=5)
 def show_st_3dmol(pdb_code,original_pdb,style_lst=None,label_lst=None,reslabel_lst=None,zoom_dict=None,surface_lst=None,cartoon_style="oval",
                   cartoon_radius=0.2,cartoon_color="lightgray",zoom=1,spin_on=False):
                       
