@@ -96,7 +96,7 @@ def trig(x, *args): # x = [C0, amp, psi, c26_, c29_, c31_]
             args[1] - x[0] - x[1]**2*math.cos((31.5/10.3-3)*2*math.pi-math.pi*2/3 - x[2]),
             args[2] - x[0] - x[1]**2*math.cos((29.5/10.3-2)*2*math.pi-math.pi*2/3 - x[2])]
 
-@st.cache_data(max_entries=5)
+@st.cache_data(max_entries=5, experimental_allow_widgets=True)
 def show_st_3dmol(pdb_code,original_pdb,style_lst=None,label_lst=None,reslabel_lst=None,zoom_dict=None,surface_lst=None,cartoon_style="oval",
                   cartoon_radius=0.2,cartoon_color="lightgray",zoom=1,spin_on=False):
 
