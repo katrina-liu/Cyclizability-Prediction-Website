@@ -46,7 +46,7 @@ def getSequence(pbdid):
     sequencelink = f"https://www.rcsb.org/fasta/entry/{pbdid}"
     tt = requests.get(sequencelink).text
     seq = re.findall("\n[A|C|G|T]+\n", tt)[0][1:-1]
-    chain = ''.join(re.findall(f">{pbdid.upper()}_\d|Chain ([A-Z])|DNA \(\d+-MER\)|synthetic construct \(\d+\)\n[A|C|G|T]+\n",tt))[0]
+    chain = ''.join(re.findall(f">{pbdid.upper()}_\d|Chains? ([A-Z]).*\n[A|C|G|T]+\n",tt))[0]
     otherlink = f'https://files.rcsb.org/download/{pbdid}.cif'
     tt = requests.get(otherlink).text
     stuff = re.findall(f'ATOM[^\S\r\n]+(\d+)[^\S\r\n]+([A-Z])[^\S\r\n]+(\"?[A-Z]+\d*\'?\"?)[^\S\r\n]+\.[^\S\r\n]+([A-Z]+)[^\S\r\n]+{chain}[^\S\r\n]+([0-9]+)[^\S\r\n]+([0-9]+).+\n',tt)
@@ -278,7 +278,7 @@ def main():
     with col2:
         st.subheader("OR")
     with col3:
-        pdbid = st.text_input('PDB ID','7OHC').upper()
+        pdbid = st.text_input('PDB ID','').upper()
         texttt=''
         if pdbid != '' and seq == '':
             try:
