@@ -1,28 +1,15 @@
 import streamlit as st
 
-from sklearn import metrics
-from sklearn import decomposition
-from sklearn import manifold
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd 
-import time 
 import random 
 import math
 import io
 
-import tensorflow as tf
 from tensorflow import keras
-from keras.datasets import mnist
-from keras.models import Sequential
-from keras.layers import Dense
-from keras.layers import Dropout
 
-import scipy.stats
-from scipy.stats import f_oneway, levene, mannwhitneyu, normaltest, ttest_ind
 from scipy.interpolate import interp1d
 from scipy.optimize import fsolve
-from sklearn.model_selection import train_test_split
 
 import re
 import py3Dmol
@@ -138,7 +125,7 @@ def show_st_3dmol(pdb_code,original_pdb,style_lst=None,label_lst=None,reslabel_l
         showmol(view, height=int(swidth), width=int(swidth))
     return 0
 
-@st.cache_data(hash_funcs={"MyUnhashableClass": lambda _: None})
+@st.cache_data(max_entries=5)
 def longcode(sequence, name, factor=30):
     pdb_output = "HEADER    output from spatial analysis\n"
     L = 200
@@ -275,6 +262,11 @@ def main():
     with col1:
         seq = st.text_input('input a sequence', seq)
         texttt = ''
+
+        uploaded_file = st.file_uploader("upload a pdb file")
+        if uploaded_file is not None:
+            texttt = uploaded_file.getvalue().decode("utf-8")
+            
     with col2:
         st.subheader("OR")
     with col3:
@@ -286,10 +278,6 @@ def main():
                 seq = getSequence(pdbid)
             except:
                 pass
-        uploaded_file = st.file_uploader("upload a pdb file")
-
-        if uploaded_file is not None:
-            texttt = io.StringIO(uploaded_file.getvalue().decode("utf-8")).read()
             
     st.markdown("---")
     st.subheader("Please select the parameter you would like to predict/view")
