@@ -356,18 +356,19 @@ def main():
 
     col1, col2, col3 = st.columns([0.46, 0.08, 0.46])
     seq = ''
+    
+    texttt = None
     with col1:
         seq = st.text_input('input a sequence', seq).upper()
+        try:
+            texttt = st.file_uploader("upload a pdb file").getvalue().decode("utf-8")
+        except:
+            pass
         
-        texttt = st.file_uploader("upload a pdb file")
-        if texttt is not None:
-            texttt = texttt.getvalue().decode("utf-8")
-            
     with col2:
         st.subheader("OR")
     with col3:
         pdbid = st.text_input('PDB ID','').upper()
-        texttt=None
         if pdbid != '' and seq == '':
             try:
                 texttt = getTexttt(pdbid)
