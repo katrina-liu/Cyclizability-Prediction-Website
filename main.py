@@ -17,7 +17,6 @@ from stmol import showmol
 import requests
 import streamlit_scrollable_textbox as stx
 import streamlit_js_eval
-import functools
 
 swidth = streamlit_js_eval.streamlit_js_eval(js_expressions='screen.width', want_output = True, key = 'SCR')
 try:
@@ -310,11 +309,11 @@ def sequence_ui(imgg, seq, option):
 
     modelnum = int(re.findall(r'\d+', option)[0])
 
-    cNfree = pred(load_model(modelnum), list50)
+    cNfree = list(pred(load_model(modelnum), list50))
     
     # show matplotlib graph
     fig, ax = plt.subplots()
-    ax.plot(list(cNfree))
+    ax.plot(cNfree)
     plt.figure(figsize=(10, 3))
     plt.gca().spines['top'].set_visible(False)
     plt.gca().spines['right'].set_visible(False)
@@ -360,9 +359,11 @@ def main():
         seq = st.text_input('input a sequence', seq).upper()
         texttt = ''
 
-        uploaded_file = st.file_uploader("upload a pdb file")
-        if uploaded_file is not None:
-            texttt = uploaded_file.getvalue().decode("utf-8")
+        texttt = st.file_uploader("upload a pdb file")
+        if texttt is not None:
+            texttt = texttt.getvalue().decode("utf-8")
+        else:
+            texttt = ""
             
     with col2:
         st.subheader("OR")
