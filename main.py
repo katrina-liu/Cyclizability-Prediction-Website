@@ -17,6 +17,7 @@ from stmol import showmol
 import requests
 import streamlit_scrollable_textbox as stx
 import streamlit_js_eval
+import functools
 
 swidth = streamlit_js_eval.streamlit_js_eval(js_expressions='screen.width', want_output = True, key = 'SCR')
 try:
