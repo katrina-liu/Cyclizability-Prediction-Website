@@ -5,7 +5,7 @@ import numpy as np
 import random 
 import math
 import io
-
+import time
 from tensorflow import keras
 
 from scipy.interpolate import interp1d
@@ -17,31 +17,39 @@ from stmol import showmol
 import requests
 import streamlit_scrollable_textbox as stx
 import streamlit_js_eval
-from memory_profiler import profile
 
-swidth = int(streamlit_js_eval.streamlit_js_eval(js_expressions='screen.width', want_output = True, key = 'SCR'))
+swidth = streamlit_js_eval.streamlit_js_eval(js_expressions='screen.width', want_output = True, key = 'SCR')
+try:
+    swidth = int(swidth)
+except TypeError:
+    swidth = 1100
 
-@st.cache_resource(max_entries=5)
+def my_cache(f):
+    @st.cache_data(max_entries=5, ttl=600)
+    @functools.wraps(f)
+    def inner(*args, **kwargs):
+        return f(*args, **kwargs)
+    return inner
+
+@st.cache_data
 def load_model(modelnum: int):
     return keras.models.load_model(f"./adapter-free-Model/C{modelnum}free")
 
 def pred(model, pool):
-    input = np.zeros((len(pool), 200))
+    input = np.zeros((len(pool), 200), dtype = np.single)
     temp = {'A':0, 'T':1, 'G':2, 'C':3}
     for i in range(len(pool)): 
         for j in range(50): 
             input[i][j*4 + temp[pool[i][j]]] = 1
-    A = model.predict(input, batch_size=128)#.reshape(len(pool),)
+    A = model.predict(input, batch_size=128)
     A.resize((len(pool),))
     return A
 
-@st.cache_data(max_entries=5)
 def getTexttt(pbdid): 
     link = f"https://files.rcsb.org/download/{pbdid}.pdb"
     texttt = requests.get(link).text
     return texttt
 
-@st.cache_data(max_entries=5)
 def getSequence(pbdid):
     sequencelink = f"https://www.rcsb.org/fasta/entry/{pbdid}"
     tt = requests.get(sequencelink).text
@@ -69,7 +77,7 @@ def envelope(fity):
     uy.append(fity[-1])
     lx.append(len(fity)-1)
     ly.append(fity[-1])
-
+    
     ub = np.array([fity, interp1d(ux, uy, kind=3, bounds_error=False)(range(len(fity)))]).max(axis=0)
     lb = np.array([fity, interp1d(lx, ly, kind=3, bounds_error=False)(range(len(fity)))]).min(axis=0)
     return ub-lb
@@ -79,8 +87,7 @@ def trig(x, *args): # x = [C0, amp, psi]
             args[0][1] - x[0] - x[1]**2*math.cos((31.5/10.3-3)*2*math.pi-math.pi*2/3 - x[2]),
             args[0][2] - x[0] - x[1]**2*math.cos((29.5/10.3-2)*2*math.pi-math.pi*2/3 - x[2])]
 
-@st.cache_data(max_entries=5)
-def show_st_3dmol(pdb_code,original_pdb,style_lst=None,label_lst=None,reslabel_lst=None,zoom_dict=None,surface_lst=None,cartoon_style="oval",
+def show_st_3dmol(pdb_code,original_pdb,cartoon_style="oval",
                   cartoon_radius=0.2,cartoon_color="lightgray",zoom=1,spin_on=False):
     
     if swidth >= 1000:
@@ -119,11 +126,10 @@ def show_st_3dmol(pdb_code,original_pdb,style_lst=None,label_lst=None,reslabel_l
         showmol(view, height=int(swidth), width=int(swidth))
     return 0
 
-@st.cache_data(max_entries=5)
 def helpercode(model_num: int, seqlist: dict, pool, sequence):
     prediction = pred(load_model(model_num), tuple(seqlist.keys()))
     
-    result_array = np.zeros((len(pool), len(pool[0]) - 49))
+    result_array = np.zeros((len(pool), len(pool[0]) - 49), dtype = np.single)
 
     for i in range(len(pool)):
         for j in range(49):
@@ -139,7 +145,6 @@ def helpercode(model_num: int, seqlist: dict, pool, sequence):
     result_array -= result_array.mean()
     return result_array
 
-@st.cache_data(max_entries=5)
 def pdb_out(name, psi, amp, factor):
     lines = re.findall('ATOM[^\S\r\n]+(\d+)[^\S\r\n]+(C8|C6)[^\S\r\n]+(DA|DG|DC|DT)[^\S\r\n]+([A-Z])[^\S\r\n]+(-?[0-9]+)[^\S\r\n]+'+"(-?\d+[\.\d]*)[^\S\r\n]*"*5+"([A-Z])",name)
 
@@ -151,19 +156,19 @@ def pdb_out(name, psi, amp, factor):
         if line[2] in ['DT', 'DC'] and line[1] == 'C6':
             qwer.append([float(line[_]) for _ in range(5, 8)])
             
-    qwer, asdf = np.array(qwer[:len(qwer)//2]), np.array(qwer[-(len(qwer)//2):][::-1])
+    qwer, asdf = np.array(qwer[:len(qwer)//2], dtype = np.single), np.array(qwer[-(len(qwer)//2):][::-1], dtype = np.single)
     
     otemp = (qwer+asdf)/2
-    o = np.array([(otemp[i+1]+otemp[i])/2 for i in range(len(otemp)-1)])
+    o = np.array([(otemp[i+1]+otemp[i])/2 for i in range(len(otemp)-1)], dtype = np.single)
     ytemp = qwer - asdf
-    z = np.array([otemp[i+1]-otemp[i] for i in range(len(otemp)-1)])
+    z = np.array([otemp[i+1]-otemp[i] for i in range(len(otemp)-1)], dtype = np.single)
     ytemp = [(ytemp[i+1]+ytemp[i])/2 for i in range(len(ytemp)-1)]
-    x = np.array([np.cross(ytemp[i], z[i]) for i in range(len(z))])
-    y = np.array([np.cross(z[i], x[i]) for i in range(len(z))])
+    x = np.array([np.cross(ytemp[i], z[i]) for i in range(len(z))], dtype = np.single)
+    y = np.array([np.cross(z[i], x[i]) for i in range(len(z))], dtype = np.single)
 
-    x = -np.array([x[i]/np.linalg.norm(x[i]) for i in range(len(x))]) # direction of minor groove
-    y = np.array([y[i]/np.linalg.norm(y[i]) for i in range(len(y))])
-    z = np.array([z[i]/np.linalg.norm(z[i]) for i in range(len(z))])
+    x = -np.array([x[i]/np.linalg.norm(x[i]) for i in range(len(x))], dtype = np.single) # direction of minor groove
+    y = np.array([y[i]/np.linalg.norm(y[i]) for i in range(len(y))], dtype = np.single)
+    z = np.array([z[i]/np.linalg.norm(z[i]) for i in range(len(z))], dtype = np.single)
 
     arrow = []
     for j in range(len(x)): arrow.append(np.cos(-psi[j])*x[j] + np.sin(-psi[j])*y[j])
@@ -193,8 +198,8 @@ def pdb_out(name, psi, amp, factor):
 
     return pdb_output
 
-@st.cache_data(max_entries=5)
-def longcode(sequence, name, factor=30):
+@my_cache
+def longcode(sequence, name, factor):
     pool = []
     base = ['A','T','G','C']
     for i in range(200):
@@ -222,7 +227,7 @@ def longcode(sequence, name, factor=30):
         root = fsolve(trig, [1, 1, 1], args=[m[i] for m in models.values()])
         psi.append(root[2])
         if(psi[-1] > math.pi): psi[-1] -= 2*math.pi
-    psi = np.array(psi)
+    psi = np.array(psi, dtype = np.single)
 
     # trim random sequences
     amp,psi = amp[25:-25],psi[25:-25]
@@ -233,7 +238,7 @@ def spatial_analysis_ui(imgg, seq, texttt):
     st.markdown("***")
     st.header(f"Spatial Visualization")
         
-    factor = st.text_input('vector length scale factor','e.g. 30')
+    factor = st.text_input('vector length scale factor','30')
     try:
         factor = int(factor)
     except:
@@ -251,7 +256,7 @@ def spatial_analysis_ui(imgg, seq, texttt):
     axx.plot(amp)
     axxx.plot(psi)
     
-    file_nameu = st.text_input('file name', 'e.g. spatial_visualization.pdb')
+    file_nameu = st.text_input('file name', 'spatial_visualization.pdb')
     show_st_3dmol(pdb_output,texttt)
     st.download_button('Download .pdb', pdb_output, file_name=f"{file_nameu}")
                 
@@ -260,7 +265,7 @@ def spatial_analysis_ui(imgg, seq, texttt):
     filetype = st.selectbox('amplitude graph file type', ('svg', 'png', 'jpeg'))
         
     figg.savefig(imgg, format=filetype)
-    file_name3 = st.text_input('file name', f'e.g. amplitude_graph.{filetype}')
+    file_name3 = st.text_input('file name', f'amplitude_graph.{filetype}')
     btn3 = st.download_button(label="Download graph",data=imgg,file_name=f"{file_name3}",mime=f"image/{filetype}")
     st.pyplot(figg)
 
@@ -269,7 +274,7 @@ def spatial_analysis_ui(imgg, seq, texttt):
     st.header(f"Data for Amplitude Graph")
     long_text11 = "\n".join(f"{0.5+i}, {amp[i]}" for i in range(len(amp)))
 
-    file_name11 = st.text_input('file name', f'e.g. amplitude_data.txt')
+    file_name11 = st.text_input('file name', f'amplitude_data.txt')
         
     st.download_button('Download data', long_text11, file_name=f"{file_name11}")
 
@@ -282,7 +287,7 @@ def spatial_analysis_ui(imgg, seq, texttt):
     filetype2 = st.selectbox('phase graph file type', ('svg', 'png', 'jpeg'))
         
     figgg.savefig(imgg, format=filetype2)
-    file_name4 = st.text_input('file name', f'e.g. phase_graph.{filetype2}')
+    file_name4 = st.text_input('file name', f'phase_graph.{filetype2}')
     btn4 = st.download_button(label="Download graph",data=imgg,file_name=f"{file_name4}",mime=f"image/{filetype2}")
     st.pyplot(figgg)
 
@@ -292,18 +297,18 @@ def spatial_analysis_ui(imgg, seq, texttt):
         
     long_text22 = "\n".join(f"{0.5+i}, {psi[i]}" for i in range(len(psi)))
 
-    file_name22 = st.text_input('file name', f'e.g. phase_data.txt')
+    file_name22 = st.text_input('file name', f'phase_data.txt')
         
     st.download_button('Download data', long_text22, file_name=f"{file_name22}")
 
     st.markdown("data format in (x, y) coordinates")
     stx.scrollableTextbox(long_text22, height = 300)
 
-def sequence_ui(imgg, seq):
+def sequence_ui(imgg, seq, option):
     list50 = [seq[i:i+50] for i in range(len(seq)-50+1)]
 
     modelnum = int(re.findall(r'\d+', option)[0])
-        
+
     cNfree = pred(load_model(modelnum), list50)
     
     # show matplotlib graph
@@ -319,7 +324,7 @@ def sequence_ui(imgg, seq):
         
     fig.savefig(imgg, format=filetype5)
 
-    file_name1 = st.text_input('file name', f'e.g. {option.replace(" ", "_")}.{filetype5}')
+    file_name1 = st.text_input('file name', f'C{modelnum}free_prediction.{filetype5}')
     btn = st.download_button(
         label="Download graph",
         data=imgg,
@@ -333,7 +338,7 @@ def sequence_ui(imgg, seq):
     # show data in scrollable window
     long_text = "\n".join(f"{list50[i]} {cNfree[i]}" for i in range(len(cNfree)))
 
-    file_name = st.text_input('file name', f'e.g. {option.replace(" ", "_")}.txt')
+    file_name = st.text_input('file name', f'C{modelnum}free_prediction.txt')
     
     st.download_button('Download data', long_text, file_name=f"{file_name}")
         
@@ -380,7 +385,7 @@ def main():
     elif option == 'Spatial analysis' and texttt == '' and seq != '':
         st.subheader(":red[Please attach a pdb file to visualize]")
     elif len(seq) >= 50:
-        sequence_ui(imgg, seq)
+        sequence_ui(imgg, seq, option)
     else:
         st.subheader(":red[Please provide a sequence (>= 50bp) or a pdb id/file]")
     return 0
