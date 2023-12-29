@@ -358,19 +358,16 @@ def main():
     seq = ''
     with col1:
         seq = st.text_input('input a sequence', seq).upper()
-        texttt = ''
-
+        
         texttt = st.file_uploader("upload a pdb file")
         if texttt is not None:
             texttt = texttt.getvalue().decode("utf-8")
-        else:
-            texttt = ""
             
     with col2:
         st.subheader("OR")
     with col3:
         pdbid = st.text_input('PDB ID','').upper()
-        texttt=''
+        texttt=None
         if pdbid != '' and seq == '':
             try:
                 texttt = getTexttt(pdbid)
@@ -383,9 +380,9 @@ def main():
     option = st.selectbox('', ('Spatial analysis', 'C0free prediction', 'C26free prediction', 'C29free prediction', 'C31free prediction'))
 
     imgg = io.BytesIO()
-    if option == 'Spatial analysis' and seq != '' and texttt != '':
+    if option == 'Spatial analysis' and seq != '' and texttt != None:
         spatial_analysis_ui(imgg, seq, texttt)
-    elif option == 'Spatial analysis' and texttt == '' and seq != '':
+    elif option == 'Spatial analysis' and texttt == None and seq != '':
         st.subheader(":red[Please attach a pdb file to visualize]")
     elif len(seq) >= 50:
         sequence_ui(imgg, seq, option)
