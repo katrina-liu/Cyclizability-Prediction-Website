@@ -6,7 +6,7 @@ The Cyclizability Prediction Website predicts the preference of DNA bending in 3
 
 Input format:
 
-![alt text](https://github.com/codergirl1106/Cyclizability-Prediction-Website/blob/main/input.png?raw=true | width=100)
+![alt text](https://github.com/codergirl1106/Cyclizability-Prediction-Website/blob/main/input.png?raw=true)
 
 The website has two main functions: Spatial analysis and C(0,26,29,31)free predictions
 
