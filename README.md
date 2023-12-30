@@ -56,6 +56,6 @@ Input should be a valid PDB ID or a custom sequence (length >= 50bp)
 
 The C0free prediction graph can be downloaded as a .png, .svg or .jpeg
 
-The data can be downloaded as a .txt in the form of (50bp segement of seqeunce, y) pairs
+The data can be downloaded as a .txt in the form of (50bp seqeunce segment, y) pairs
 
-The C(26,29,31)free predictions also share the above functionality (not displayed here)
+The C(26,29,31)free predictions also share the above C0free prediction functionality (not displayed here)
