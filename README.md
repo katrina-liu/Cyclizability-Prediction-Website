@@ -1,6 +1,6 @@
 # Cyclizability-Prediction-Website
 
-Developers: Sophia Yan and Park Jonghan
+Developers: Park Jonghan and Sophia Yan
 
 The Cyclizability Prediction Website predicts the preference of DNA bending in 3D space.
 
