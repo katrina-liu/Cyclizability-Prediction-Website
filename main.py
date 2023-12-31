@@ -352,6 +352,7 @@ def main():
     st.markdown("***functions*** + ***parameters***")
     st.markdown("***:blue[spatial visualization function]***: ***:green[pdb id]*** OR ***:violet[custom sequence + pdb file]***")
     st.markdown("***:blue[C0, C26, C29, or C31 predictions]***: ***:green[pdb id (fasta sequence >= 50bp)]*** OR ***:violet[custom sequence (>= 50bp)]***")
+    st.markdown("the [github](%s) code!" % "https://github.com/codergirl1106/Cyclizability-Prediction-Website/")
     st.markdown("---")
 
     col1, col2, col3 = st.columns([0.46, 0.08, 0.46])
