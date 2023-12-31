@@ -32,7 +32,7 @@ As understood by single-molecule experiments (Ngo, Cell. 2015; iBiology lecture 
 
 **C0free** summarizes the overall bending of the Widom 601 DNA. 
 
-![alt text]("https://github.com/codergirl1106/Cyclizability-Prediction-Website/blob/main/images/601 c0free.png"?raw=true) 
+![alt text](https://github.com/codergirl1106/Cyclizability-Prediction-Website/blob/main/images/601_c0free.png?raw=true) 
 
 **Spatial analysis** summarizes the most probable direction of DNA bending. 
 
@@ -42,7 +42,7 @@ LH intrinsically bends towards the nucleosome center, but RH does not, which all
 
 High C0free and consistent direction of DNA bending in 601 LH DNA are two main factors that may have contributed to the widespread of Widom 601 DNA in structural biology. In reverse, one can design an arbitrary DNA sequence that fits to a desired crystal structure. 
 
-![alt text]("https://github.com/codergirl1106/Cyclizability-Prediction-Website/blob/main/601 spatial.png"?raw=true) 
+![alt text](https://github.com/codergirl1106/Cyclizability-Prediction-Website/blob/main/601_spatial.png?raw=true) 
 
 ## Website
 
