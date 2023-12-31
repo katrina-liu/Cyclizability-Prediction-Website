@@ -32,7 +32,7 @@ As understood by single-molecule experiments (Ngo, Cell. 2015; iBiology lecture 
 
 **C0free** summarizes the overall bending of the Widom 601 DNA. 
 
-![alt text](https://github.com/codergirl1106/Cyclizability-Prediction-Website/blob/main/images/601_c0free.png?raw=true) 
+![alt text](https://github.com/codergirl1106/Cyclizability-Prediction-Website/blob/main/images/601_C0free.png?raw=true) 
 
 **Spatial analysis** summarizes the most probable direction of DNA bending. 
 
