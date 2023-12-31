@@ -16,7 +16,7 @@ This builds on our previous work on measuring DNA mechanics on the genome scale 
 
 Predictions are based on 50 bp DNA sequences. For DNA > 50 bp, we slide 50 bp windows with a stride of 1 bp. 
 
-![alt text](https://github.com/codergirl1106/Cyclizability-Prediction-Website/blob/main/accuracy.png?raw=true)
+![alt text](https://github.com/codergirl1106/Cyclizability-Prediction-Website/blob/main/images/accuracy.png?raw=true)
 
 ## Why adapter-free cyclizability? 
 
@@ -32,7 +32,7 @@ As understood by single-molecule experiments (Ngo, Cell. 2015; iBiology lecture 
 
 **C0free** summarizes the overall bending of the Widom 601 DNA. 
 
-![alt text](https://github.com/codergirl1106/Cyclizability-Prediction-Website/blob/main/601 c0free.png?raw=true) 
+![alt text](https://github.com/codergirl1106/Cyclizability-Prediction-Website/blob/main/images/601 c0free.png?raw=true) 
 
 **Spatial analysis** summarizes the most probable direction of DNA bending. 
 
@@ -54,7 +54,7 @@ Input should be a valid PDB ID or a custom sequence + pdb file
 
 #### Example (7OHC - Widom 601 DNA wrapping around a histone complex):
 
-![alt text](https://github.com/codergirl1106/Cyclizability-Prediction-Website/blob/main/7ohc.png?raw=true)
+![alt text](https://github.com/codergirl1106/Cyclizability-Prediction-Website/blob/main/images/7ohc.png?raw=true)
 
 The vector predictions can be downloaded as a .pdb file
 
@@ -62,7 +62,7 @@ The vector predictions can be downloaded as a .pdb file
 
 ### 1.2. Amplitude 
 
-![alt text](https://github.com/codergirl1106/Cyclizability-Prediction-Website/blob/main/amplitude.png?raw=true)
+![alt text](https://github.com/codergirl1106/Cyclizability-Prediction-Website/blob/main/images/amplitude.png?raw=true)
 
 Amplitude is a length of each line in the visualized spatial analysis. 
 
@@ -74,7 +74,7 @@ The data can be downloaded as a .txt in the form of (x,y) coordinates
 
 ### 1.3. Phase 
 
-![alt text](https://github.com/codergirl1106/Cyclizability-Prediction-Website/blob/main/phase.png?raw=true)
+![alt text](https://github.com/codergirl1106/Cyclizability-Prediction-Website/blob/main/images/phase.png?raw=true)
 
 Phase is a direction of each line in the visualized spatial analysis. 
 
@@ -92,7 +92,7 @@ Input should be a valid PDB ID or a custom sequence (length >= 50bp)
 
 #### Resulting C0free prediction
 
-![alt text](https://github.com/codergirl1106/Cyclizability-Prediction-Website/blob/main/c0free_prediction.png?raw=true)
+![alt text](https://github.com/codergirl1106/Cyclizability-Prediction-Website/blob/main/images/c0free_prediction.png?raw=true)
 
 The C0free prediction graph can be downloaded as a .png, .svg or .jpeg
 
