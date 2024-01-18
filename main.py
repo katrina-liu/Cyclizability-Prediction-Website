@@ -84,9 +84,9 @@ def envelope(fity):
     return ub-lb
 
 def trig(x, *args): # x = [C0, amp, psi]
-    return [args[0][0] - x[0] - x[1]**2*math.cos((33.5/10.3-3)*2*math.pi-math.pi*2/3 - x[2]),
-            args[0][1] - x[0] - x[1]**2*math.cos((30.5/10.3-3)*2*math.pi-math.pi*2/3 - x[2]),
-            args[0][2] - x[0] - x[1]**2*math.cos((28.5/10.3-2)*2*math.pi-math.pi*2/3 - x[2])]
+    return [args[0][0] - x[0] - x[1]**2*math.cos((34.5/args[-1]-3)*2*math.pi-math.pi*2/3 - x[2]),
+            args[0][1] - x[0] - x[1]**2*math.cos((31.5/args[-1]-3)*2*math.pi-math.pi*2/3 - x[2]),
+            args[0][2] - x[0] - x[1]**2*math.cos((29.5/args[-1]-2)*2*math.pi-math.pi*2/3 - x[2])]
 
 def show_st_3dmol(pdb_code,original_pdb,cartoon_style="oval",
                   cartoon_radius=0.2,cartoon_color="lightgray",zoom=1,spin_on=False):
@@ -200,7 +200,7 @@ def pdb_out(name, psi, amp, factor):
     return pdb_output
 
 @my_cache
-def longcode(sequence, name, factor):
+def longcode(sequence, name, factor, helical_turn):
     pool = []
     base = ['A','T','G','C']
     for i in range(200):
@@ -225,7 +225,7 @@ def longcode(sequence, name, factor):
     
     psi = []
     for i in range(len(amp)):
-        root = fsolve(trig, [1, 1, 1], args=[m[i] for m in models.values()])
+        root = fsolve(trig, [1, 1, 1], args=[m[i] for m in models.values()]+[helical_turn])
         psi.append(root[2])
         if(psi[-1] > math.pi): psi[-1] -= 2*math.pi
     psi = np.array(psi, dtype = np.single)
@@ -244,8 +244,13 @@ def spatial_analysis_ui(imgg, seq, texttt):
         factor = int(factor)
     except:
         factor = 30
+    helical_turn = st.text_input('bp/helical turn','10.3')
+    try:
+        helical_turn = float(helical_turn)
+    except:
+        helical_turn = 10.3
 
-    pdb_output, amp, psi = longcode(seq, texttt, factor)
+    pdb_output, amp, psi = longcode(seq, texttt, factor, helical_turn)
         
     figg, axx = plt.subplots()
     figgg, axxx = plt.subplots()
