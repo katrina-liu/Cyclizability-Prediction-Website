@@ -1,6 +1,6 @@
 # [Cyclizability-Prediction-Website](https://cyclizability-prediction-website-5vbkhabttypl6n29hkxc8q.streamlit.app?raw=true)
 
-**Maintaintained by** Sophia Yan & Jonghan Park 
+**Maintained by** Sophia Yan & Jonghan Park 
 
 **Cite**: 
 
