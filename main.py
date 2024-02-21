@@ -91,7 +91,7 @@ def trig(x, *args): # x = [C0, amp, psi]
 def show_st_3dmol(pdb_code,original_pdb,cartoon_style="oval",
                   cartoon_radius=0.2,cartoon_color="lightgray",zoom=1,spin_on=False):
     
-        if swidth >= 1000:
+    if swidth >= 1000:
         view = py3Dmol.view(width=int(swidth/2), height=int(swidth/3))
     else:
         view = py3Dmol.view(width=int(swidth), height=int(swidth))
