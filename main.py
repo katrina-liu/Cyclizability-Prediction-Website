@@ -95,7 +95,7 @@ def show_st_3dmol(pdb_code,original_pdb,cartoon_style="oval",
         view = py3Dmol.view(width=int(swidth/2), height=int(swidth/3))
     else:
         view = py3Dmol.view(width=int(swidth), height=int(swidth))
-        
+    
     view.addModelsAsFrames(pdb_code)
     view.addModelsAsFrames(original_pdb)
 
@@ -140,8 +140,9 @@ def helpercode(model_num: int, seqlist: dict, pool, sequence):
 
     result_array = result_array.mean(axis=0)
 
-    seqlist = [sequence[i:i+50] for i in range(len(sequence)-49)]
-    result_array[49:-49] = pred(load_model(model_num), seqlist).reshape(-1, )
+    if len(sequence) >= 50:
+        seqlist = [sequence[i:i+50] for i in range(len(sequence)-49)]
+        result_array[49:-49] = pred(load_model(model_num), seqlist).reshape(-1, )
 
     result_array -= result_array.mean()
     return result_array
