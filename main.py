@@ -140,8 +140,9 @@ def helpercode(model_num: int, seqlist: dict, pool, sequence):
 
     result_array = result_array.mean(axis=0)
 
-    seqlist = [sequence[i:i+50] for i in range(len(sequence)-49)]
-    result_array[49:-49] = pred(load_model(model_num), seqlist).reshape(-1, )
+    if len(sequence) >= 50:
+        seqlist = [sequence[i:i+50] for i in range(len(sequence)-49)]
+        result_array[49:-49] = pred(load_model(model_num), seqlist).reshape(-1, )
 
     result_array -= result_array.mean()
     return result_array
