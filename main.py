@@ -95,10 +95,12 @@ def show_st_3dmol(pdb_code,original_pdb,cartoon_style="oval",
         view = py3Dmol.view(width=int(swidth/2), height=int(swidth/3))
     else:
         view = py3Dmol.view(width=int(swidth), height=int(swidth))
-        
+    
     view.addModelsAsFrames(pdb_code)
     view.addModelsAsFrames(original_pdb)
 
+    print(pdb_code)
+    print(original_pdb)
     view.setStyle({"cartoon": {"style": cartoon_style,"color": cartoon_color,"thickness": cartoon_radius}})
 
     style_lst = []
