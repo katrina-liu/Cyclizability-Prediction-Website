@@ -123,7 +123,6 @@ def show_st_3dmol(pdb_code,original_pdb,cartoon_style="oval",
         showmol(view, height=int(swidth/3), width=int(swidth/2))
     else:
         showmol(view, height=int(swidth), width=int(swidth))
-    showmol(view, height=int(swidth), width=int(swidth))
 
     return 0
 
