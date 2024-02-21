@@ -18,6 +18,7 @@ import requests
 import streamlit_scrollable_textbox as stx
 import streamlit_js_eval
 import functools
+from itertools import chain
 
 swidth = streamlit_js_eval.streamlit_js_eval(js_expressions='screen.width', want_output = True, key = 'SCR')
 try:
@@ -54,12 +55,22 @@ def getTexttt(pbdid):
 def getSequence(pbdid):
     sequencelink = f"https://www.rcsb.org/fasta/entry/{pbdid}"
     tt = requests.get(sequencelink).text
-    seq = re.findall("\n[A|C|G|T]+\n", tt)[0][1:-1]
-    chain = ''.join(re.findall(f">{pbdid.upper()}_\d|Chains? ([A-Z]).*\n[A|C|G|T]+\n",tt))[0]
-    otherlink = f'https://files.rcsb.org/download/{pbdid}.cif'
-    tt = requests.get(otherlink).text
-    stuff = re.findall(f'ATOM[^\S\r\n]+(\d+)[^\S\r\n]+([A-Z])[^\S\r\n]+(\"?[A-Z]+\d*\'?\"?)[^\S\r\n]+\.[^\S\r\n]+([A-Z]+)[^\S\r\n]+{chain}[^\S\r\n]+([0-9]+)[^\S\r\n]+([0-9]+).+\n',tt)
-    return seq[int(stuff[0][5])-1:int(stuff[-1][5])]
+    seq_and_chains = re.findall(f">{pbdid.upper()}_\d|Chains? ([A-Z]).*\n([A|C|G|T]+)\n",tt)
+    sequences = []
+    print(seq_and_chains)
+    for i in seq_and_chains:
+        if i[0] == '' or i[1] == '':
+            continue
+        chain, seq = i[0], i[1]
+        print("hiiiiii", chain, seq)
+        otherlink = f'https://files.rcsb.org/download/{pbdid}.cif'
+        tt = requests.get(otherlink).text
+        stuff = re.findall(f'ATOM[^\S\r\n]+(\d+)[^\S\r\n]+([A-Z])[^\S\r\n]+(\"?[A-Z]+\d*\'?\"?)[^\S\r\n]+\.[^\S\r\n]+([A-Z]+)[^\S\r\n]+{chain}[^\S\r\n]+([0-9]+)[^\S\r\n]+([0-9]+).+\n',tt)
+        print("this should work", seq[int(stuff[0][5])-1:int(stuff[-1][5])])
+        sequences.append(seq[int(stuff[0][5])-1:int(stuff[-1][5])])
+        
+    print("yooooooo:", sequences)
+    return sequences
 
 def envelope(fity):
     ux, uy = [0], [fity[0]]
@@ -95,15 +106,17 @@ def show_st_3dmol(pdb_code,original_pdb,cartoon_style="oval",
         view = py3Dmol.view(width=int(swidth/2), height=int(swidth/3))
     else:
         view = py3Dmol.view(width=int(swidth), height=int(swidth))
-    view = py3Dmol.view(width=int(swidth), height=int(swidth))
-
+        
     view.addModelsAsFrames(pdb_code)
     view.addModelsAsFrames(original_pdb)
+    print(pdb_code, original_pdb)
     view.setStyle({"cartoon": {"style": cartoon_style,"color": cartoon_color,"thickness": cartoon_radius}})
+
     style_lst = []
     surface_lst = []
     
     view.addStyle({'chain':'Z'}, {'stick': {"color": "blue"}})
+
     view.addStyle({'chain':'A'}, {'line': {}})
     view.addStyle({'chain':'B'}, {'line': {}})
     view.addStyle({'chain':'C'}, {'line': {}})
@@ -123,12 +136,11 @@ def show_st_3dmol(pdb_code,original_pdb,cartoon_style="oval",
         showmol(view, height=int(swidth/3), width=int(swidth/2))
     else:
         showmol(view, height=int(swidth), width=int(swidth))
-
     return 0
 
 def helpercode(model_num: int, seqlist: dict, pool, sequence):
     prediction = pred(load_model(model_num), tuple(seqlist.keys()))
-    
+
     result_array = np.zeros((len(pool), len(pool[0]) - 49), dtype = np.single)
 
     for i in range(len(pool)):
@@ -136,9 +148,8 @@ def helpercode(model_num: int, seqlist: dict, pool, sequence):
             result_array[i, j] = prediction[seqlist[pool[i][j:j + 50]]]
         for j in range(len(pool[i])-98, len(pool[i])-49):
             result_array[i, j] = prediction[seqlist[pool[i][j:j + 50]]]
-
+    
     result_array = result_array.mean(axis=0)
-
     if len(sequence) >= 50:
         seqlist = [sequence[i:i+50] for i in range(len(sequence)-49)]
         result_array[49:-49] = pred(load_model(model_num), seqlist).reshape(-1, )
@@ -172,12 +183,20 @@ def pdb_out(name, psi, amp, factor):
     z = np.array([z[i]/np.linalg.norm(z[i]) for i in range(len(z))], dtype = np.single)
 
     arrow = []
-    for j in range(len(x)): arrow.append(np.cos(-psi[j])*x[j] + np.sin(-psi[j])*y[j])
+    psi = list(chain.from_iterable(psi))
+    amp = list(chain.from_iterable(amp))
+    print(len(psi))
+    for j in range(len(x)):
+        arrow.append(np.cos(-psi[j])*x[j] + np.sin(-psi[j])*y[j])
+        
     arrow = np.array(arrow)
     for j in range(len(arrow)):
         arrow[j] /= np.linalg.norm(arrow[j])
         arrow[j] *= factor*amp[j]
-    e = o + arrow
+
+    print(o.shape, arrow.shape)
+    
+    e = o + arrow  # OH THIS ERROR OCCURS BECAUSE THERE ARE TWO SEQUENCES. FIGURE OUT HOW TO INCORPERATE THE SECOND SEQUENCE.
     o = np.around(o, 3)
     e = np.around(e, 3)
 
@@ -200,9 +219,10 @@ def pdb_out(name, psi, amp, factor):
     return pdb_output
 
 @my_cache
-def longcode(sequence, name, factor, helical_turn):
+def longcode(sequence, helical_turn):
     pool = []
     base = ['A','T','G','C']
+    print(len(sequence))  # figure out how to divide the longcode function up, but also check for reverse complementary strands?? 7ohc doesn't actually have 2 sequences, one is reverse complementary
     for i in range(200):
         left = ''.join([random.choice(base) for i in range(49)])
         right = ''.join([random.choice(base) for i in range(49)])
@@ -220,7 +240,9 @@ def longcode(sequence, name, factor, helical_turn):
     models = dict.fromkeys((26, 29, 31))
     for modelnum in models.keys():
         models[modelnum] = helpercode(modelnum, seqlist, pool, sequence)
-
+        print(len(models[modelnum]))
+        print(models[modelnum])
+        
     amp = sum(envelope(m) for m in models.values()) / len(models)
     
     psi = []
@@ -228,14 +250,16 @@ def longcode(sequence, name, factor, helical_turn):
         root = fsolve(trig, [1, 1, 1], args=[m[i] for m in models.values()]+[helical_turn])
         psi.append(root[2])
         if(psi[-1] > math.pi): psi[-1] -= 2*math.pi
+
+    print("here!", len(amp), len(psi))
     psi = np.array(psi, dtype = np.single)
 
     # trim random sequences
     amp,psi = amp[25:-25],psi[25:-25]
 
-    return pdb_out(name, psi, amp, factor), amp, psi
+    return amp, psi
 
-def spatial_analysis_ui(imgg, seq, texttt):
+def spatial_analysis_ui(imgg, sequence, texttt):
     st.markdown("***")
     st.header(f"Spatial Visualization")
         
@@ -250,67 +274,80 @@ def spatial_analysis_ui(imgg, seq, texttt):
     except:
         helical_turn = 10.3
 
-    pdb_output, amp, psi = longcode(seq, texttt, factor, helical_turn)
-        
-    figg, axx = plt.subplots()
-    figgg, axxx = plt.subplots()
-        
-    plt.figure(figsize=(10, 3))
-    plt.gca().spines['top'].set_visible(False)
-    plt.gca().spines['right'].set_visible(False)
+    # remove reverse complementary strands
+
+    amp, psi = [], []
+    for seq in sequence:
+        a, p = longcode(seq, helical_turn)
+        print(seq, a, p)
+        amp.append(a)
+        psi.append(p)
     
-    axx.plot(amp)
-    axxx.plot(psi)
-    
+    pdb_output = pdb_out(texttt, psi, amp, factor)
+
     file_nameu = st.text_input('file name', 'spatial_visualization.pdb')
     show_st_3dmol(pdb_output,texttt)
     st.download_button('Download .pdb', pdb_output, file_name=f"{file_nameu}")
-                
+                    
     st.markdown("***")
-    st.header(f"Amplitude Graph")
-    filetype = st.selectbox('amplitude graph file type', ('svg', 'png', 'jpeg'))
+    
+    for v in range(len(amp)):
+        figg, axx = plt.subplots()
+        figgg, axxx = plt.subplots()
+            
+        plt.figure(figsize=(10, 3))
+        plt.gca().spines['top'].set_visible(False)
+        plt.gca().spines['right'].set_visible(False)
         
-    figg.savefig(imgg, format=filetype)
-    file_name3 = st.text_input('file name', f'amplitude_graph.{filetype}')
-    btn3 = st.download_button(label="Download graph",data=imgg,file_name=f"{file_name3}",mime=f"image/{filetype}")
-    st.pyplot(figg)
+        axx.plot(amp[v])
+        axxx.plot(psi[v])
+        
+        st.header(f"Amplitude Graph {v+1}")
+        filetype = st.selectbox(f'amplitude graph {v+1} file type', ('svg', 'png', 'jpeg'))
+        
+        figg.savefig(imgg, format=filetype)
+        file_name3 = st.text_input('file name', f'amplitude_graph{v+1}.{filetype}')
+        btn3 = st.download_button(label="Download graph",data=imgg,file_name=f"{file_name3}",mime=f"image/{filetype}")
+        st.pyplot(figg)
 
-    st.markdown("***")
-        
-    st.header(f"Data for Amplitude Graph")
-    long_text11 = "\n".join(f"{0.5+i}, {amp[i]}" for i in range(len(amp)))
+        st.markdown("***")
+            
+        st.header(f"Data for Amplitude Graph {v+1}")
+        long_text11 = "\n".join(f"{0.5+i}, {amp[v][i]}" for i in range(len(amp[v])))
 
-    file_name11 = st.text_input('file name', f'amplitude_data.txt')
-        
-    st.download_button('Download data', long_text11, file_name=f"{file_name11}")
+        file_name11 = st.text_input('file name', f'amplitude_data{v+1}.txt')
+            
+        st.download_button('Download data', long_text11, file_name=f"{file_name11}")
 
-    st.markdown("data format in (x, y) coordinates")
-    stx.scrollableTextbox(long_text11, height = 300)
+        st.markdown("data format in (x, y) coordinates")
+        stx.scrollableTextbox(long_text11, height = 300)
+            
+        st.markdown("***")
+                    
+        st.header(f"Phase Graph {v+1}")
+        filetype2 = st.selectbox(f'phase graph {v+1} file type', ('svg', 'png', 'jpeg'))
         
-    st.markdown("***")
-                
-    st.header(f"Phase Graph")
-    filetype2 = st.selectbox('phase graph file type', ('svg', 'png', 'jpeg'))
-        
-    figgg.savefig(imgg, format=filetype2)
-    file_name4 = st.text_input('file name', f'phase_graph.{filetype2}')
-    btn4 = st.download_button(label="Download graph",data=imgg,file_name=f"{file_name4}",mime=f"image/{filetype2}")
-    st.pyplot(figgg)
+        figgg.savefig(imgg, format=filetype2)
+        file_name4 = st.text_input('file name', f'phase_graph{v+1}.{filetype2}')
+        btn4 = st.download_button(label="Download graph",data=imgg,file_name=f"{file_name4}",mime=f"image/{filetype2}")
+        st.pyplot(figgg)
 
-    st.markdown("***")
-        
-    st.header(f"Data for Phase Graph")
-        
-    long_text22 = "\n".join(f"{0.5+i}, {psi[i]}" for i in range(len(psi)))
+        st.markdown("***")
+            
+        st.header(f"Data for Phase Graph {v+1}")
+            
+        long_text22 = "\n".join(f"{0.5+i}, {psi[v][i]}" for i in range(len(psi[v])))
 
-    file_name22 = st.text_input('file name', f'phase_data.txt')
-        
-    st.download_button('Download data', long_text22, file_name=f"{file_name22}")
+        file_name22 = st.text_input('file name', f'phase_data{v+1}.txt')
+            
+        st.download_button('Download data', long_text22, file_name=f"{file_name22}")
 
-    st.markdown("data format in (x, y) coordinates")
-    stx.scrollableTextbox(long_text22, height = 300)
+        st.markdown("data format in (x, y) coordinates")
+        stx.scrollableTextbox(long_text22, height = 300)
 
 def sequence_ui(imgg, seq, option):
+    seq = seq[0]
+    
     list50 = [seq[i:i+50] for i in range(len(seq)-50+1)]
 
     modelnum = int(re.findall(r'\d+', option)[0])
@@ -365,7 +402,7 @@ def main():
     
     texttt = None
     with col1:
-        seq = st.text_input('input a sequence', seq).upper()
+        seq = [st.text_input('input a sequence', seq).upper()]
         try:
             texttt = st.file_uploader("upload a pdb file").getvalue().decode("utf-8")
         except:
@@ -375,7 +412,7 @@ def main():
         st.subheader("OR")
     with col3:
         pdbid = st.text_input('PDB ID','').upper()
-        if pdbid != '' and seq == '':
+        if pdbid != '' and seq[0] == '':
             try:
                 texttt = getTexttt(pdbid)
                 seq = getSequence(pdbid)
@@ -387,11 +424,11 @@ def main():
     option = st.selectbox('', ('Spatial analysis', 'C0free prediction', 'C26free prediction', 'C29free prediction', 'C31free prediction'))
 
     imgg = io.BytesIO()
-    if option == 'Spatial analysis' and seq != '' and texttt != None:
+    if option == 'Spatial analysis' and len(seq) != 0 and texttt != None:
         spatial_analysis_ui(imgg, seq, texttt)
     elif option == 'Spatial analysis' and texttt == None and seq != '':
         st.subheader(":red[Please attach a pdb file to visualize]")
-    elif len(seq) >= 50:
+    elif len(seq[0]) >= 50:
         sequence_ui(imgg, seq, option)
     else:
         st.subheader(":red[Please provide a sequence (>= 50bp) or a pdb id/file]")
