@@ -99,8 +99,6 @@ def show_st_3dmol(pdb_code,original_pdb,cartoon_style="oval",
     view.addModelsAsFrames(pdb_code)
     view.addModelsAsFrames(original_pdb)
 
-    print(pdb_code)
-    print(original_pdb)
     view.setStyle({"cartoon": {"style": cartoon_style,"color": cartoon_color,"thickness": cartoon_radius}})
 
     style_lst = []
