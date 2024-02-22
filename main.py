@@ -95,7 +95,6 @@ def show_st_3dmol(pdb_code,original_pdb,cartoon_style="oval",
         view = py3Dmol.view(width=int(swidth/2), height=int(swidth/3))
     else:
         view = py3Dmol.view(width=int(swidth), height=int(swidth))
-    view = py3Dmol.view(width=int(swidth), height=int(swidth))
 
     view.addModelsAsFrames(pdb_code)
     view.addModelsAsFrames(original_pdb)
