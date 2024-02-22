@@ -10,4 +10,3 @@ stmol
 py3Dmol
 ipython_genutils
 streamlit_js_eval
-rdkit
