@@ -19,6 +19,7 @@ import streamlit_scrollable_textbox as stx
 import streamlit_js_eval
 import functools
 from itertools import chain
+import string
 
 swidth = streamlit_js_eval.streamlit_js_eval(js_expressions='screen.width', want_output = True, key = 'SCR')
 try:
@@ -41,7 +42,7 @@ def pred(model, pool):
     input = np.zeros((len(pool), 200), dtype = np.single)
     temp = {'A':0, 'T':1, 'G':2, 'C':3}
     for i in range(len(pool)): 
-        for j in range(50): 
+        for j in range(50):
             input[i][j*4 + temp[pool[i][j]]] = 1
     A = model.predict(input, batch_size=128)
     A.resize((len(pool),))
@@ -55,11 +56,15 @@ def getTexttt(pbdid):
 def getSequence(pbdid):
     sequencelink = f"https://www.rcsb.org/fasta/entry/{pbdid}"
     tt = requests.get(sequencelink).text
-    seq_and_chains = re.findall(f">{pbdid.upper()}_\d|Chains? ([A-Z])([^|]*).*\n([A|C|G|T]+)\n",tt)
+    seq_and_chains = re.findall(f">{pbdid.upper()}_\d|Chains? ([A-Z])([^|]*).*\n([A-Z]+)\n",tt)
+
+    otherlink = f'https://files.rcsb.org/download/{pbdid}.cif'
+    tt = requests.get(otherlink).text
     sequences = []
     cords = []
 
     qqq = dict()
+    sqq = dict()
     for i in seq_and_chains:
         if i[0] == '' or i[2] == '':
             continue
@@ -68,42 +73,81 @@ def getSequence(pbdid):
         chains, seq = [i[0]], i[2]
         if len(im) >= 2:
             chains += list(map(lambda x: x.strip()[0], im[1:]))
-
-        otherlink = f'https://files.rcsb.org/download/{pbdid}.cif'
-        tt = requests.get(otherlink).text  # ask ma about multiple chains, and if they give different lengths for the sequence, what does that mean?        
         
         stuff = re.findall(f'ATOM[^\S\r\n]+(\d+)[^\S\r\n]+([A-Z])[^\S\r\n]+(\"?[A-Z]+\d*\'?\"?)[^\S\r\n]+\.[^\S\r\n]+([A-Z]+)[^\S\r\n]+([{"|".join(chains)}])[^\S\r\n]+([0-9]+)[^\S\r\n]+([0-9]+)[^\S\r\n]+\?[^\S\r\n]+'+"(-?\d+[\.\d]*)[^\S\r\n]*"*5+'.+\n', tt)
-        
-        sequences.append(seq[int(stuff[0][6])-1:int(stuff[-1][6])])
-        
-        # find helical axis
-        for line in stuff:
-            if line[3] in ['DA', 'DG'] and line[2] == 'C8':
-                ye = chains.index(line[4])
-                if ye in qqq:
-                    qqq[ye].append([float(line[_]) for _ in range(7, 10)])
-                else:
-                    qqq.update({ye: [[float(line[_]) for _ in range(7, 10)]]})
-                
-            if line[3] in ['DT', 'DC'] and line[2] == 'C6':
-                ye = chains.index(line[4])
-                if ye in qqq:
-                    qqq[ye].append([float(line[_]) for _ in range(7, 10)])
-                else:
-                    qqq.update({ye: [[float(line[_]) for _ in range(7, 10)]]})
-    
-    for i in qqq:
-        qwer, asdf = np.array(qqq[i][:len(qqq[i])//2], dtype = np.single), np.array(qqq[i][-(len(qqq[i])//2):][::-1], dtype = np.single)
-        otemp = (qwer+asdf)/2
-        o = np.array([(otemp[i+1]+otemp[i])/2 for i in range(len(otemp)-1)], dtype = np.single)
-        ytemp = qwer - asdf
-        z = np.array([otemp[i+1]-otemp[i] for i in range(len(otemp)-1)], dtype = np.single)
-        ytemp = [(ytemp[i+1]+ytemp[i])/2 for i in range(len(ytemp)-1)]
-        x = np.array([np.cross(ytemp[i], z[i]) for i in range(len(z))], dtype = np.single)
-        y = np.array([np.cross(z[i], x[i]) for i in range(len(z))], dtype = np.single)
-        x = -np.array([x[i]/np.linalg.norm(x[i]) for i in range(len(x))], dtype = np.single) # direction of minor groove
-        y = np.array([y[i]/np.linalg.norm(y[i]) for i in range(len(y))], dtype = np.single)
-        cords.append((o, x, y))
+
+        if set(seq[int(stuff[0][6])-1:int(stuff[-1][6])]).issubset({'A', 'C', 'G', 'T'}):
+            # find helical axis
+            for line in stuff:
+                if line[3] in ['DA', 'DG'] and line[2] == 'C8':
+                    sqq[line[4]] = seq[int(stuff[0][6])-1:int(stuff[-1][6])]
+                    if line[4] in qqq:
+                        qqq[line[4]].append([float(line[_]) for _ in range(7, 10)])
+                    else:
+                        qqq.update({line[4]: [[float(line[_]) for _ in range(7, 10)]]})
+                    
+                if line[3] in ['DT', 'DC'] and line[2] == 'C6':
+                    sqq[line[4]] = seq[int(stuff[0][6])-1:int(stuff[-1][6])]
+                    if line[4] in qqq:
+                        qqq[line[4]].append([float(line[_]) for _ in range(7, 10)])
+                    else:
+                        qqq.update({line[4]: [[float(line[_]) for _ in range(7, 10)]]})
+
+    if len(qqq) % 2 == 0:
+        while True:
+            keyd = sorted(qqq.keys())
+            if len(keyd) == 0:
+                break
+            
+            keyn = alphabet[alphabet.index(keyd[0])+1]
+            sequences.append(sqq[keyd[0]])
+            qqq[keyd[0]] = qqq[keyd[0]]+qqq[keyn]
+            del qqq[keyn]
+            qwer, asdf = np.array(qqq[keyd[0]][:len(qqq[keyd[0]])//2], dtype = np.single), np.array(qqq[keyd[0]][-(len(qqq[keyd[0]])//2):][::-1], dtype = np.single)
+            del qqq[keyd[0]]
+            otemp = (qwer+asdf)/2
+            o = np.array([(otemp[i+1]+otemp[i])/2 for i in range(len(otemp)-1)], dtype = np.single)
+            ytemp = qwer - asdf
+            z = np.array([otemp[i+1]-otemp[i] for i in range(len(otemp)-1)], dtype = np.single)
+            ytemp = [(ytemp[i+1]+ytemp[i])/2 for i in range(len(ytemp)-1)]
+            x = np.array([np.cross(ytemp[i], z[i]) for i in range(len(z))], dtype = np.single)
+            y = np.array([np.cross(z[i], x[i]) for i in range(len(z))], dtype = np.single)
+            x = -np.array([x[i]/np.linalg.norm(x[i]) for i in range(len(x))], dtype = np.single) # direction of minor groove
+            y = np.array([y[i]/np.linalg.norm(y[i]) for i in range(len(y))], dtype = np.single)
+            cords.append((o, x, y))
+    elif len(qqq) == 3:
+        #print("hullo")
+        main_seq = sorted(sqq.items(), key=lambda x: len(x[1]))[-1][0]
+        #print(main_seq)
+        for i in qqq:
+            if i != main_seq:
+                sequences.append(sqq[i])
+                #qqq[i] = qqq[i]+qqq[main_seq]
+                qwer, asdf = np.array(qqq[i][:len(qqq[i])//2], dtype = np.single), np.array(qqq[i][-(len(qqq[i])//2):][::-1], dtype = np.single)
+                otemp = (qwer+asdf)/2
+                o = np.array([(otemp[i+1]+otemp[i])/2 for i in range(len(otemp)-1)], dtype = np.single)
+                ytemp = qwer - asdf
+                z = np.array([otemp[i+1]-otemp[i] for i in range(len(otemp)-1)], dtype = np.single)
+                ytemp = [(ytemp[i+1]+ytemp[i])/2 for i in range(len(ytemp)-1)]
+                x = np.array([np.cross(ytemp[i], z[i]) for i in range(len(z))], dtype = np.single)
+                y = np.array([np.cross(z[i], x[i]) for i in range(len(z))], dtype = np.single)
+                x = -np.array([x[i]/np.linalg.norm(x[i]) for i in range(len(x))], dtype = np.single) # direction of minor groove
+                y = np.array([y[i]/np.linalg.norm(y[i]) for i in range(len(y))], dtype = np.single)
+                cords.append((o, x, y))
+    else:
+        for i in qqq:
+            sequences.append(sqq[i])
+            qwer, asdf = np.array(qqq[i][:len(qqq[i])//2], dtype = np.single), np.array(qqq[i][-(len(qqq[i])//2):][::-1], dtype = np.single)
+            otemp = (qwer+asdf)/2
+            o = np.array([(otemp[i+1]+otemp[i])/2 for i in range(len(otemp)-1)], dtype = np.single)
+            ytemp = qwer - asdf
+            z = np.array([otemp[i+1]-otemp[i] for i in range(len(otemp)-1)], dtype = np.single)
+            ytemp = [(ytemp[i+1]+ytemp[i])/2 for i in range(len(ytemp)-1)]
+            x = np.array([np.cross(ytemp[i], z[i]) for i in range(len(z))], dtype = np.single)
+            y = np.array([np.cross(z[i], x[i]) for i in range(len(z))], dtype = np.single)
+            x = -np.array([x[i]/np.linalg.norm(x[i]) for i in range(len(x))], dtype = np.single) # direction of minor groove
+            y = np.array([y[i]/np.linalg.norm(y[i]) for i in range(len(y))], dtype = np.single)
+            cords.append((o, x, y))
     
     return sequences, cords
 
