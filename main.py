@@ -59,6 +59,8 @@ def getSequence(pbdid):
     seq_and_chains = re.findall(f">{pbdid.upper()}_\d|Chains? ([A-Z])([^|]*).*\n([A-Z]+)\n",tt)
 
     seq_and_chains.sort()
+
+    print(seq_and_chains)
     
     otherlink = f'https://files.rcsb.org/download/{pbdid}.cif'
     tt = requests.get(otherlink).text
@@ -95,12 +97,13 @@ def getSequence(pbdid):
                     else:
                         qqq.update({line[4]: [[float(line[_]) for _ in range(7, 10)]]})
 
+    print(len(qqq))
     if len(qqq) % 2 == 0:
         while True:
             keyd = sorted(qqq.keys())
             if len(keyd) == 0:
                 break
-            
+            print("hi?")
             keyn = alphabet[alphabet.index(keyd[0])+1]
             sequences.append(sqq[keyd[0]])
             qqq[keyd[0]] = qqq[keyd[0]]+qqq[keyn]
