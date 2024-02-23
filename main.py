@@ -58,6 +58,8 @@ def getSequence(pbdid):
     tt = requests.get(sequencelink).text
     seq_and_chains = re.findall(f">{pbdid.upper()}_\d|Chains? ([A-Z])([^|]*).*\n([A-Z]+)\n",tt)
 
+    seq_and_chains.sort()
+    
     otherlink = f'https://files.rcsb.org/download/{pbdid}.cif'
     tt = requests.get(otherlink).text
     sequences = []
