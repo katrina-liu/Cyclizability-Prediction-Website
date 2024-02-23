@@ -54,21 +54,16 @@ def getTexttt(pbdid):
     return texttt
 
 def getSequence(pbdid):
-    print(1)
     sequencelink = f"https://www.rcsb.org/fasta/entry/{pbdid}"
-    print(2)
     tt = requests.get(sequencelink).text
-    print(3)
     seq_and_chains = re.findall(f">{pbdid.upper()}_\d|Chains? ([A-Z])([^|]*).*\n([A-Z]+)\n",tt)
-    print(4)
     seq_and_chains.sort()
-    print(seq_and_chains)
     
     otherlink = f'https://files.rcsb.org/download/{pbdid}.cif'
     tt = requests.get(otherlink).text
     sequences = []
     cords = []
-    print(5)
+    
     qqq = dict()
     sqq = dict()
     for i in seq_and_chains:
@@ -99,13 +94,12 @@ def getSequence(pbdid):
                     else:
                         qqq.update({line[4]: [[float(line[_]) for _ in range(7, 10)]]})
 
-    print(len(qqq))
+    alphabet = string.ascii_uppercase
     if len(qqq) % 2 == 0:
         while True:
             keyd = sorted(qqq.keys())
             if len(keyd) == 0:
                 break
-            print("hi?")
             keyn = alphabet[alphabet.index(keyd[0])+1]
             sequences.append(sqq[keyd[0]])
             qqq[keyd[0]] = qqq[keyd[0]]+qqq[keyn]
