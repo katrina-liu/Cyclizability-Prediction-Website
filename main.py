@@ -75,24 +75,23 @@ def getSequence(pbdid):
         if len(im) >= 2:
             chains += list(map(lambda x: x.strip()[0], im[1:]))
         
-        stuff = re.findall(f'ATOM[^\S\r\n]+(\d+)[^\S\r\n]+([A-Z])[^\S\r\n]+(\"?[A-Z]+\d*\'?\"?)[^\S\r\n]+\.[^\S\r\n]+([A-Z]+)[^\S\r\n]+([{"|".join(chains)}])[^\S\r\n]+([0-9]+)[^\S\r\n]+([0-9]+)[^\S\r\n]+\?[^\S\r\n]+'+"(-?\d+[\.\d]*)[^\S\r\n]*"*5+'.+\n', tt)
-
-        if set(seq[int(stuff[0][6])-1:int(stuff[-1][6])]).issubset({'A', 'C', 'G', 'T'}):
+        stuff = re.findall(f'ATOM[^\S\r\n]+(\d+)[^\S\r\n]+([A-Z])[^\S\r\n]+(\"?[A-Z]+\d*\'?\"?)[^\S\r\n]+(.)[^\S\r\n]+([A-Z]+)[^\S\r\n]+([{"|".join(chains)}])[^\S\r\n]+([0-9]+)[^\S\r\n]+([0-9]+)[^\S\r\n]+\?[^\S\r\n]+'+"(-?\d+[\.\d]*)[^\S\r\n]*"*5+'.+\n', tt)
+        if set(seq[int(stuff[0][7])-1:int(stuff[-1][7])]).issubset({'A', 'C', 'G', 'T'}):
             # find helical axis
             for line in stuff:
-                if line[3] in ['DA', 'DG'] and line[2] == 'C8':
-                    sqq[line[4]] = seq[int(stuff[0][6])-1:int(stuff[-1][6])]
-                    if line[4] in qqq:
-                        qqq[line[4]].append([float(line[_]) for _ in range(7, 10)])
+                if line[4] in ['DA', 'DG'] and line[2] == 'C8':
+                    sqq[line[5]] = seq[int(stuff[0][7])-1:int(stuff[-1][7])]
+                    if line[5] in qqq:
+                        qqq[line[5]].append([float(line[_]) for _ in range(8, 11)])
                     else:
-                        qqq.update({line[4]: [[float(line[_]) for _ in range(7, 10)]]})
+                        qqq.update({line[5]: [[float(line[_]) for _ in range(8, 11)]]})
                     
-                if line[3] in ['DT', 'DC'] and line[2] == 'C6':
-                    sqq[line[4]] = seq[int(stuff[0][6])-1:int(stuff[-1][6])]
-                    if line[4] in qqq:
-                        qqq[line[4]].append([float(line[_]) for _ in range(7, 10)])
+                if line[4] in ['DT', 'DC'] and line[2] == 'C6':
+                    sqq[line[5]] = seq[int(stuff[0][7])-1:int(stuff[-1][7])]
+                    if line[5] in qqq:
+                        qqq[line[5]].append([float(line[_]) for _ in range(8, 11)])
                     else:
-                        qqq.update({line[4]: [[float(line[_]) for _ in range(7, 10)]]})
+                        qqq.update({line[5]: [[float(line[_]) for _ in range(8, 11)]]})
 
     alphabet = string.ascii_uppercase
     if len(qqq) % 2 == 0:
