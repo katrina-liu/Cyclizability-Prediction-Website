@@ -5,7 +5,7 @@
 #SBATCH -o slurm_out/pred_cyc_%j.out
 #SBATCH --mail-user= ##### FILL IN #####
 #SBATCH --mail-type=FAIL
-#SBATCH --mem=5G
+#SBATCH --mem=50G
 
 source activate cyc_pred
 
